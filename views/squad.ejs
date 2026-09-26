@@ -1,0 +1,128 @@
+<%- include('partials/head', { title: 'Squad' }) %>
+<%- include('partials/nav', { active: 'squad' }) %>
+<main class="container">
+  <div class="page-head">
+    <h1>Squad &amp; Stats</h1>
+    <p class="muted">Selection pool — Sky-Sports-style cards for each player. Stats are built from the matches recorded on the <a href="/results">Results</a> page; add and edit players in <a href="/settings#players-panel">Settings</a>.</p>
+  </div>
+
+  <section class="panel">
+    <form class="squad-filter" method="get" action="/squad">
+      <label>Season
+        <select name="season" onchange="this.form.submit()">
+          <% seasons.forEach(s => { %><option value="<%= s %>" <%= s === season ? 'selected' : '' %>><%= s %></option><% }) %>
+        </select>
+      </label>
+      <label>Team
+        <select name="team" onchange="this.form.submit()">
+          <option value="0">All teams</option>
+          <% settings.teams.names.forEach((n, i) => { if (!n) return; %><option value="<%= i + 1 %>" <%= team === i + 1 ? 'selected' : '' %>><%= n %></option><% }) %>
+        </select>
+      </label>
+      <div class="record-strip">
+        <div><span>P</span><strong><%= record.played %></strong></div>
+        <div><span>W</span><strong><%= record.won %></strong></div>
+        <div><span>D</span><strong><%= record.drawn %></strong></div>
+        <div><span>L</span><strong><%= record.lost %></strong></div>
+        <div><span>PF</span><strong><%= record.pointsFor %></strong></div>
+        <div><span>PA</span><strong><%= record.pointsAgainst %></strong></div>
+      </div>
+    </form>
+    <p class="muted small" style="margin:.5rem 0 0">
+      <% if (matchCount) { %>Showing <strong><%= season %></strong> stats from <%= matchCount %> recorded match<%= matchCount === 1 ? '' : 'es' %>.<% } else { %>No matches recorded for <%= season %> yet — record results on the <a href="/results">Results</a> page and the cards fill in automatically.<% } %>
+    </p>
+  </section>
+
+  <%
+    // Sort by squad-team membership:
+    //   [1] only → [1,2] → [1,2,3] → [2] only → [2,3] → [3] only → unassigned
+    // Formula: min(teams) * 10 + teams.length. Ties broken alphabetically.
+    function teamRank(p) {
+      const t = (p.teams || []).filter(n => n >= 1 && n <= 3);
+      if (!t.length) return 999;
+      return Math.min(...t) * 10 + t.length;
+    }
+    const sortedPlayers = (squad.players || []).slice().sort((a, b) => {
+      const r = teamRank(a) - teamRank(b);
+      return r !== 0 ? r : (a.name || '').localeCompare(b.name || '');
+    });
+  %>
+  <% if (!sortedPlayers.length) { %>
+    <section class="panel"><p class="muted">No players yet. Add your squad in <a href="/settings#players-panel">Settings → Players</a> (you can paste a whole list of names at once).</p></section>
+  <% } %>
+  <div class="cards">
+    <% sortedPlayers.forEach(p => {
+         const s = stats[p.id] || null; %>
+      <article class="player-card" data-pid="<%= p.id %>">
+        <header>
+          <h2><%= p.name %></h2>
+          <span class="role"><%= (p.positions || []).join(' / ') %></span>
+        </header>
+        <div class="team-picker">
+          <span class="muted small">Squad:</span>
+          <% [1,2,3].forEach(n => { %>
+            <label class="team-tick" title="<%= settings.teams.names[n - 1] %>">
+              <input type="checkbox" class="team-cb" data-team="<%= n %>" <%= (p.teams || []).includes(n) ? 'checked' : '' %>>
+              <span><%= n %></span>
+            </label>
+          <% }); %>
+          <span class="team-save-status muted small"></span>
+        </div>
+        <section class="stat-block">
+          <h3>Season <%= season %></h3>
+          <dl>
+            <div><dt>APPS</dt><dd><%= s ? s.apps : '—' %></dd></div>
+            <div><dt>STARTS</dt><dd><%= s ? s.starts : '—' %></dd></div>
+            <div><dt>TRIES</dt><dd><%= s ? s.tries : '—' %></dd></div>
+            <div><dt>PTS</dt><dd><%= s ? s.points : '—' %></dd></div>
+          </dl>
+        </section>
+        <% if (s && (s.cons || s.pens || s.dgs || s.mom || s.yellow || s.red)) { %>
+          <section class="stat-block">
+            <h3>Kicking &amp; discipline</h3>
+            <dl>
+              <div><dt>CON</dt><dd><%= s.cons %></dd></div>
+              <div><dt>PEN</dt><dd><%= s.pens %></dd></div>
+              <div><dt>DG</dt><dd><%= s.dgs %></dd></div>
+              <div><dt>POTM</dt><dd><%= s.mom %></dd></div>
+              <div><dt>YC</dt><dd><%= s.yellow %></dd></div>
+              <div><dt>RC</dt><dd><%= s.red %></dd></div>
+            </dl>
+          </section>
+        <% } %>
+        <% if (s && s.last5.length) { %>
+          <p class="last5-line">
+            <span class="last5-label">Last 5</span>
+            <% s.last5.forEach((g, k) => { %><span class="form-pip form-<%= g.code === 'S' ? 's' : g.code === 'B' ? 'b' : 'x' %>" title="<%= g.date %> vs <%= g.opposition %><%= g.tries ? ` · ${g.tries} tr` : '' %><%= g.points ? ` · ${g.points} pts` : '' %><%= g.mom ? ' · POTM' : '' %>"><%= g.code %><% if (g.tries) { %><sup><%= g.tries %></sup><% } %></span><% }) %>
+          </p>
+        <% } %>
+        <% if (p.notes) { %><p class="notes"><%= p.notes %></p><% } %>
+      </article>
+    <% }); %>
+  </div>
+</main>
+<script>
+  // Persist squad-team tick changes via /players/save
+  document.querySelectorAll('.player-card').forEach(card => {
+    const status = card.querySelector('.team-save-status');
+    card.querySelectorAll('.team-cb').forEach(cb => {
+      cb.addEventListener('change', async () => {
+        const teams = [...card.querySelectorAll('.team-cb:checked')].map(c => Number(c.dataset.team)).sort();
+        status.textContent = 'Saving…';
+        try {
+          const res = await fetch('/players/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: card.dataset.pid, teams }),
+          });
+          if (!res.ok) throw new Error((await res.json()).error || res.statusText);
+          status.textContent = 'Saved';
+          setTimeout(() => { status.textContent = ''; }, 1200);
+        } catch (e) {
+          status.textContent = 'Failed: ' + e.message;
+        }
+      });
+    });
+  });
+</script>
+<%- include('partials/foot') %>

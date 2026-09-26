@@ -1,0 +1,130 @@
+<%- include('partials/head', { title: 'Team Builder' }) %>
+<%- include('partials/nav', { active: 'builder' }) %>
+<main class="container builder">
+  <div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap">
+    <div>
+      <h1>Team Builder · <span id="hd-format"><%= formats[selection.format].label %></span></h1>
+      <p class="muted">Drag players from the pool onto a shirt number, or onto the bench. Drag rows to swap. Changes save automatically.</p>
+    </div>
+    <div class="actions" style="margin:0">
+      <span id="save-status" class="muted small">Loaded.</span>
+      <button id="save-btn" class="btn primary">Save now</button>
+    </div>
+  </div>
+
+  <section class="match-meta panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+      <h2 style="margin:0">Match details</h2>
+      <button id="next-fixture-btn" type="button" class="btn small" title="Pull date, opposition and venue from the next fixture on the Fixtures page">↻ Use next fixture</button>
+    </div>
+    <p id="next-fixture-status" class="muted small" style="margin:.25rem 0 0"></p>
+    <div class="match-fields">
+      <label>Match title <input id="m-title" value="<%= selection.matchTitle || '' %>" placeholder="e.g. League match"></label>
+      <label>Team
+        <select id="m-team">
+          <% settings.teams.names.forEach((n, i) => { %><option value="<%= i + 1 %>" <%= Number(selection.team) === i + 1 ? 'selected' : '' %>><%= n || `Team ${i + 1}` %></option><% }) %>
+        </select>
+      </label>
+      <label>Opposition <input id="m-opposition" value="<%= selection.opposition || '' %>"></label>
+      <label>Home / away
+        <select id="m-homeaway">
+          <option value="home" <%= selection.homeAway !== 'away' ? 'selected' : '' %>>Home</option>
+          <option value="away" <%= selection.homeAway === 'away' ? 'selected' : '' %>>Away</option>
+        </select>
+      </label>
+      <label>Venue <input id="m-venue" value="<%= selection.venue || '' %>"></label>
+      <label>Date <input id="m-date" type="date" value="<%= selection.matchDate || '' %>"></label>
+      <label>Kick-off <input id="m-kickoff" type="time" value="<%= selection.kickoff || '' %>"></label>
+      <div class="cap-keeper-row">
+        <label>
+          <span class="label-with-icon"><%- include('partials/role-badge', { label: 'C' }) %> Captain</span>
+          <select id="m-captain"><option value="">— none —</option></select>
+        </label>
+        <label>
+          <span class="label-with-icon"><%- include('partials/role-badge', { label: 'VC' }) %> Vice-captain</span>
+          <select id="m-vice"><option value="">— none —</option></select>
+        </label>
+        <label>
+          <span class="label-with-icon"><%- include('partials/kicker-icon', { size: 18 }) %> Goal kicker</span>
+          <select id="m-kicker"><option value="">— none —</option></select>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <div class="builder-grid">
+    <section class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+        <h2 style="margin:0">Starting <span id="xv-label">XV</span></h2>
+        <div style="display:flex;align-items:center;gap:8px">
+          <label class="muted small" style="display:flex;align-items:center;gap:4px">Format
+            <select id="m-format">
+              <% Object.entries(formats).sort((a, b) => b[0] - a[0]).forEach(([n, f]) => { %>
+                <option value="<%= n %>" <%= Number(selection.format) === Number(n) ? 'selected' : '' %>><%= f.label %></option>
+              <% }) %>
+            </select>
+          </label>
+          <button id="clear-lineup-btn" type="button" class="btn small">Clear</button>
+        </div>
+      </div>
+      <p class="muted small" style="margin-top:.25rem">Drop a player on a shirt number · drag rows to swap. <span class="oop-key">Amber</span> = playing out of their listed positions.</p>
+      <ol id="lineup" class="droplist"></ol>
+    </section>
+    <section class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+        <h2 style="margin:0">Replacements</h2>
+        <div style="display:flex;align-items:center;gap:8px">
+          <label class="muted small" style="display:flex;align-items:center;gap:4px">Bench
+            <select id="m-bench-size"></select>
+          </label>
+          <button id="clear-bench-btn" type="button" class="btn small">Clear</button>
+        </div>
+      </div>
+      <p class="muted small" style="margin-top:.25rem">Drop pool players here · drag between the bench and the starting side to swap.</p>
+      <ol id="bench" class="droplist bench-list"></ol>
+      <div id="unit-summary" class="unit-summary"></div>
+    </section>
+    <aside class="panel pool">
+      <div class="pool-head">
+        <h2>Squad Pool</h2>
+        <button id="spond-import" type="button" class="btn small" title="Pull RSVPs from the selected Spond event">↻ Spond</button>
+      </div>
+      <label class="muted small" style="display:block;margin-top:.25rem">
+        Spond event
+        <select id="spond-event-select"
+                data-current="<%= selection.spondEvent?.id || '' %>"
+                style="width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;margin-top:2px">
+          <option value="">Loading upcoming events…</option>
+        </select>
+      </label>
+      <% if (selection.spondEvent?.name) { %>
+        <p class="muted small" style="margin-top:.25rem">Last import: <%= selection.spondEvent.name %><% if (selection.spondEvent.importedAt) { %> · <%= new Date(selection.spondEvent.importedAt).toLocaleString('en-GB') %><% } %></p>
+      <% } %>
+      <p id="spond-summary" class="muted small"></p>
+
+      <label class="muted small" style="display:flex;align-items:center;gap:6px;margin-top:.5rem">
+        Filter
+        <select id="pool-position-filter" style="flex:1;padding:4px 6px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+          <option value="">All positions</option>
+          <option value="fwd">Forwards</option>
+          <option value="back">Backs</option>
+        </select>
+      </label>
+
+      <h3 id="available-heading" class="muted small" style="margin:.75rem 0 .25rem 0">
+        Available
+        <span id="multi-select-hint" style="font-weight:normal;margin-left:.5rem;display:none">
+          — <span id="multi-select-count">0</span> selected
+          <button id="multi-select-clear" type="button" class="btn small" style="margin-left:.4rem">Clear</button>
+        </span>
+      </h3>
+      <ul id="squad-pool" class="poollist"></ul>
+    </aside>
+  </div>
+
+  <script id="initial-data" type="application/json">
+    <%- JSON.stringify({ squad, selection, stats, teamNames: settings.teams.names }) %>
+  </script>
+  <script src="/js/builder.js" type="module"></script>
+</main>
+<%- include('partials/foot') %>

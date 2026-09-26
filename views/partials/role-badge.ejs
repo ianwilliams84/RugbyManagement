@@ -1,0 +1,7 @@
+<%
+  // Captain / vice-captain marker — the "(C)" / "(VC)" convention from rugby
+  // team sheets, drawn as a small roundel. Locals: label ('C' | 'VC'),
+  // variant ('light' for use on dark backgrounds).
+  const _label = locals.label || 'C';
+  const _variant = locals.variant === 'light' ? ' light' : '';
+%><span class="role-badge<%= _variant %>" title="<%= _label === 'VC' ? 'Vice-captain' : 'Captain' %>"><%= _label %></span>

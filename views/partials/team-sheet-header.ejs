@@ -1,0 +1,13 @@
+<header>
+  <img src="/img/ironsides-crest.png" alt="Ironsides Rugby">
+  <div class="title">
+    <h1><%= settings.club.name %> · <%= teamLabel %></h1>
+    <h2><%= selection.matchTitle || 'Match Day Team Sheet' %></h2>
+    <p class="meta">
+      <% if (selection.opposition) { %><span><%= selection.homeAway === 'away' ? '@' : 'vs' %> <%= selection.opposition %></span><% } %>
+      <% if (selection.venue) { %><span>· <%= selection.venue %></span><% } %>
+      <% if (selection.matchDate) { %><span>· <%= new Date(selection.matchDate + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) %></span><% } %>
+      <% if (selection.kickoff) { %><span>· KO <%= selection.kickoff %></span><% } %>
+    </p>
+  </div>
+</header>

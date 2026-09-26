@@ -1,0 +1,7 @@
+<%
+  // Goal-kicker marker — a rugby ball outline. Locals: size (px, default 16),
+  // stroke (default '#0E3F1A'), align (vertical-align, default '-3px').
+  const _size = locals.size || 16;
+  const _stroke = locals.stroke || '#0E3F1A';
+  const _align = locals.align || '-3px';
+%><svg class="kicker-icon" viewBox="0 0 28 18" width="<%= _size %>" height="<%= Math.round(_size * 18 / 28) %>" aria-label="Goal kicker" style="vertical-align:<%= _align %>;margin-left:4px"><title>Goal kicker</title><g fill="none" stroke="<%= _stroke %>" stroke-width="1.8" stroke-linecap="round"><ellipse cx="14" cy="9" rx="12" ry="7"/><path d="M8 9 H20"/><path d="M11 7.5 V10.5 M14 7.5 V10.5 M17 7.5 V10.5"/></g></svg>

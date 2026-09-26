@@ -1,0 +1,195 @@
+<%- include('partials/head', { title: 'Fixtures' }) %>
+<%- include('partials/nav', { active: 'fixtures' }) %>
+<main class="container">
+  <div class="page-head">
+    <h1>Fixtures</h1>
+    <p class="muted">The season schedule, with driving distance to away grounds from your home postcode. The Team Builder's "Use next fixture" button reads from here.</p>
+  </div>
+
+  <section class="panel">
+    <div class="match-fields" style="align-items:end">
+      <label>Team
+        <select id="team-select">
+          <option value="0">All teams</option>
+          <% settings.teams.names.forEach((n, i) => { if (!n) return; %><option value="<%= i + 1 %>"><%= n %></option><% }) %>
+        </select>
+      </label>
+      <label>Home postcode
+        <input id="home-pc" value="<%= homePostcode %>" placeholder="set in Settings" readonly style="background:#f5f5f5">
+      </label>
+      <div class="actions">
+        <button type="button" id="add-fixture-btn" class="btn primary">+ Add fixture</button>
+        <span id="status" class="muted small"></span>
+      </div>
+    </div>
+    <% if (!homePostcode) { %>
+      <p class="muted small" style="margin-top:.5rem">No home postcode set — set one in <a href="/settings">Settings</a> to see driving distances to away games.</p>
+    <% } %>
+  </section>
+
+  <section class="panel" id="fixture-form" hidden>
+    <h2 id="fixture-form-title">Add fixture</h2>
+    <div class="match-fields">
+      <label>Date <input id="f-date" type="date"></label>
+      <label>Kick-off <input id="f-kickoff" type="time"></label>
+      <label>Team
+        <select id="f-team">
+          <% settings.teams.names.forEach((n, i) => { %><option value="<%= i + 1 %>"><%= n || `Team ${i + 1}` %></option><% }) %>
+        </select>
+      </label>
+      <label>Opposition <input id="f-opposition"></label>
+      <label>Home / away
+        <select id="f-homeaway"><option value="home">Home</option><option value="away">Away</option></select>
+      </label>
+      <label>Venue / ground <input id="f-venue"></label>
+      <label>Postcode <input id="f-postcode" maxlength="12" placeholder="for away driving distance"></label>
+      <label>Competition <input id="f-competition" placeholder="League, Cup, Friendly…"></label>
+      <label class="full">Notes <input id="f-notes" placeholder="e.g. meet 1h before KO; 2nd XV plays after"></label>
+    </div>
+    <div class="actions">
+      <button type="button" id="f-save" class="btn primary">Save fixture</button>
+      <button type="button" id="f-cancel" class="btn">Cancel</button>
+      <span id="f-status" class="muted small"></span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Upcoming Fixtures <span id="upcoming-count" class="muted small"></span></h2>
+    <div class="table-scroll">
+      <table class="players-table" id="upcoming-table">
+        <thead>
+          <tr><th>Date</th><th>KO</th><th>Opposition</th><th></th><th>Team</th><th>Venue</th><th>Postcode</th><th>Distance</th><th>Drive</th><th></th></tr>
+        </thead>
+        <tbody id="upcoming-tbody"><tr><td colspan="10" class="muted">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Played <span id="results-count" class="muted small"></span></h2>
+    <div class="table-scroll">
+      <table class="players-table" id="fixtures-table">
+        <thead>
+          <tr><th>Date</th><th>KO</th><th>Opposition</th><th></th><th>Team</th><th>Venue</th><th>Result</th><th></th></tr>
+        </thead>
+        <tbody id="past-tbody"><tr><td colspan="8" class="muted">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script>
+  function esc(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function fmtDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso + 'T00:00');
+    if (isNaN(d)) return iso;
+    return d.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+  }
+  function fmtMins(m) {
+    if (m == null) return '';
+    const h = Math.floor(m / 60);
+    const mm = Math.round(m % 60);
+    return h ? `${h}h ${mm}m` : `${mm}m`;
+  }
+
+  let byId = {};
+  const $ = (id) => document.getElementById(id);
+
+  function actions(f) {
+    return `<button class="btn small edit-fx" data-id="${esc(f.id)}">Edit</button> <button class="btn small danger del-fx" data-id="${esc(f.id)}">×</button>`;
+  }
+  function ha(f) { return `<span class="muted small">${f.homeAway === 'away' ? 'Away' : 'Home'}</span>`; }
+  function pcCell(f) {
+    return f.postcode ? `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(f.postcode)}" target="_blank" rel="noopener">${esc(f.postcode)}</a>` : '';
+  }
+
+  function upcomingRow(f) {
+    const dist = f.distanceMiles != null ? `${f.distanceMiles.toFixed(1)} mi` : (f.homeAway === 'away' && f.postcode ? '<span class="muted">—</span>' : '');
+    return `<tr>
+      <td>${esc(fmtDate(f.date))}</td><td>${esc(f.kickoff || '')}</td>
+      <td><strong>${esc(f.opposition)}</strong>${f.competition ? ` <span class="muted small">· ${esc(f.competition)}</span>` : ''}${f.notes ? `<div class="muted small">${esc(f.notes)}</div>` : ''}</td>
+      <td>${ha(f)}</td><td>${esc(f.teamName)}</td><td>${esc(f.venue || '')}</td><td>${pcCell(f)}</td>
+      <td>${dist}</td><td>${esc(fmtMins(f.durationMin))}</td>
+      <td class="row-actions">${actions(f)}</td>
+    </tr>`;
+  }
+  function pastRow(f) {
+    const result = f.result
+      ? `<a href="/results?id=${encodeURIComponent(f.result.id)}">${f.result.scoreFor}–${f.result.scoreAgainst}</a> <span class="result-pill r-${f.result.letter}">${f.result.letter}</span>`
+      : `<a class="btn small" href="/results?fixture=${encodeURIComponent(f.id)}">Record result</a>`;
+    return `<tr>
+      <td>${esc(fmtDate(f.date))}</td><td>${esc(f.kickoff || '')}</td>
+      <td><strong>${esc(f.opposition)}</strong>${f.competition ? ` <span class="muted small">· ${esc(f.competition)}</span>` : ''}</td>
+      <td>${ha(f)}</td><td>${esc(f.teamName)}</td><td>${esc(f.venue || '')}</td>
+      <td>${result}</td>
+      <td class="row-actions">${actions(f)}</td>
+    </tr>`;
+  }
+
+  async function load() {
+    const team = $('team-select').value;
+    const upBody = $('upcoming-tbody');
+    const pastBody = $('past-tbody');
+    $('status').textContent = 'Loading…';
+    try {
+      const res = await fetch('/fixtures/data?team=' + encodeURIComponent(team));
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error);
+      byId = Object.fromEntries([...json.upcoming, ...json.past].map(f => [f.id, f]));
+      upBody.innerHTML = json.upcoming.length ? json.upcoming.map(upcomingRow).join('')
+        : '<tr><td colspan="10" class="muted">No upcoming fixtures — click "+ Add fixture".</td></tr>';
+      pastBody.innerHTML = json.past.length ? json.past.map(pastRow).join('')
+        : '<tr><td colspan="8" class="muted">No past fixtures yet.</td></tr>';
+      $('upcoming-count').textContent = json.upcoming.length ? `· ${json.upcoming.length}` : '';
+      $('results-count').textContent = json.past.length ? `· ${json.past.length}` : '';
+      $('status').textContent = '';
+      document.querySelectorAll('.edit-fx').forEach(b => b.addEventListener('click', () => openForm(byId[b.dataset.id])));
+      document.querySelectorAll('.del-fx').forEach(b => b.addEventListener('click', () => del(byId[b.dataset.id])));
+    } catch (e) {
+      upBody.innerHTML = `<tr><td colspan="10" class="muted">Failed: ${esc(e.message)}</td></tr>`;
+      pastBody.innerHTML = '';
+      $('status').textContent = '';
+    }
+  }
+
+  let editingId = null;
+  const FIELDS = { date: 'f-date', kickoff: 'f-kickoff', team: 'f-team', opposition: 'f-opposition', homeAway: 'f-homeaway', venue: 'f-venue', postcode: 'f-postcode', competition: 'f-competition', notes: 'f-notes' };
+  function openForm(f) {
+    editingId = f?.id || null;
+    $('fixture-form-title').textContent = f ? 'Edit fixture' : 'Add fixture';
+    for (const [k, id] of Object.entries(FIELDS)) {
+      $(id).value = f ? String(f[k] ?? '') : (k === 'team' ? ($('team-select').value !== '0' ? $('team-select').value : '1') : k === 'homeAway' ? 'home' : '');
+    }
+    $('f-status').textContent = '';
+    $('fixture-form').hidden = false;
+    $('f-date').focus();
+  }
+  async function del(f) {
+    if (!f || !confirm(`Delete the fixture vs ${f.opposition} on ${fmtDate(f.date)}?`)) return;
+    await fetch('/fixtures/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: f.id }) });
+    load();
+  }
+
+  $('add-fixture-btn').addEventListener('click', () => openForm(null));
+  $('f-cancel').addEventListener('click', () => { $('fixture-form').hidden = true; });
+  $('f-save').addEventListener('click', async () => {
+    const body = { id: editingId };
+    for (const [k, id] of Object.entries(FIELDS)) body[k] = $(id).value;
+    $('f-status').textContent = 'Saving…';
+    try {
+      const res = await fetch('/fixtures/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error);
+      $('fixture-form').hidden = true;
+      load();
+    } catch (e) {
+      $('f-status').textContent = 'Failed: ' + e.message;
+    }
+  });
+  $('team-select').addEventListener('change', load);
+  load();
+</script>
+<%- include('partials/foot') %>

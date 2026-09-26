@@ -1,0 +1,135 @@
+<%- include('partials/head', { title: 'Results' }) %>
+<%- include('partials/nav', { active: 'results' }) %>
+<main class="container">
+  <div class="page-head">
+    <h1>Results</h1>
+    <p class="muted">Record each match: the score, who played and who scored. Squad stats, team-sheet form and match reports are all built from these records.</p>
+  </div>
+
+  <section class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <form method="get" action="/results" class="squad-filter" style="margin:0">
+        <label>Season
+          <select name="season" onchange="this.form.submit()">
+            <% seasons.forEach(s => { %><option value="<%= s %>" <%= s === season ? 'selected' : '' %>><%= s %></option><% }) %>
+          </select>
+        </label>
+        <div class="record-strip">
+          <div><span>P</span><strong><%= record.played %></strong></div>
+          <div><span>W</span><strong><%= record.won %></strong></div>
+          <div><span>D</span><strong><%= record.drawn %></strong></div>
+          <div><span>L</span><strong><%= record.lost %></strong></div>
+          <div><span>PF</span><strong><%= record.pointsFor %></strong></div>
+          <div><span>PA</span><strong><%= record.pointsAgainst %></strong></div>
+        </div>
+      </form>
+      <div class="actions" style="margin:0">
+        <button type="button" id="new-match-btn" class="btn primary">+ Record match from Team Builder</button>
+      </div>
+    </div>
+
+    <table class="players-table" style="margin-top:1rem">
+      <thead><tr><th>Date</th><th>Team</th><th>Opposition</th><th></th><th>Score</th><th>Result</th><th></th></tr></thead>
+      <tbody>
+        <% if (!matches.length) { %>
+          <tr><td colspan="7" class="muted">No matches recorded for <%= season %> yet.</td></tr>
+        <% } %>
+        <% matches.forEach(m => { %>
+          <tr>
+            <td><%= new Date(m.date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) %></td>
+            <td class="muted small"><%= m.teamName %></td>
+            <td><strong><%= m.opposition %></strong><% if (m.competition) { %> <span class="muted small">· <%= m.competition %></span><% } %></td>
+            <td class="muted small"><%= m.homeAway === 'away' ? 'Away' : 'Home' %></td>
+            <td><%= m.scoreFor !== '' ? m.scoreFor : '?' %> – <%= m.scoreAgainst !== '' ? m.scoreAgainst : '?' %></td>
+            <td><% if (m.letter) { %><span class="result-pill r-<%= m.letter %>"><%= m.letter %></span><% } %></td>
+            <td class="row-actions">
+              <button type="button" class="btn small edit-match-btn" data-id="<%= m.id %>">Edit</button>
+              <a class="btn small" href="/report?id=<%= m.id %>">Report</a>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel" id="match-editor" hidden>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+      <h2 style="margin:0" id="editor-title">Record match</h2>
+      <label class="muted small" style="display:flex;align-items:center;gap:6px">Fill from fixture
+        <select id="fixture-select" style="padding:4px 6px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+          <option value="">—</option>
+          <% fixtures.slice().reverse().forEach(f => { %>
+            <option value="<%= f.id %>"><%= f.date %> · <%= f.opposition %> (<%= f.homeAway === 'away' ? 'A' : 'H' %>)</option>
+          <% }) %>
+        </select>
+      </label>
+    </div>
+
+    <div class="match-fields" style="margin-top:.75rem">
+      <label>Date <input id="r-date" type="date"></label>
+      <label>Kick-off <input id="r-kickoff" type="time"></label>
+      <label>Team
+        <select id="r-team">
+          <% settings.teams.names.forEach((n, i) => { %><option value="<%= i + 1 %>"><%= n || `Team ${i + 1}` %></option><% }) %>
+        </select>
+      </label>
+      <label>Opposition <input id="r-opposition"></label>
+      <label>Home / away
+        <select id="r-homeaway"><option value="home">Home</option><option value="away">Away</option></select>
+      </label>
+      <label>Venue <input id="r-venue"></label>
+      <label>Competition <input id="r-competition" placeholder="League, Cup, Friendly…"></label>
+      <label>Format
+        <select id="r-format">
+          <option value="15">15-a-side</option><option value="13">13-a-side</option><option value="10">10-a-side</option><option value="7">7-a-side</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="score-entry">
+      <div>
+        <span class="muted small">Full time</span>
+        <div class="score-pair"><input id="r-for" type="number" min="0" placeholder="Us"> <span>–</span> <input id="r-against" type="number" min="0" placeholder="Them"></div>
+      </div>
+      <div>
+        <span class="muted small">Half time (optional)</span>
+        <div class="score-pair"><input id="r-htfor" type="number" min="0" placeholder="Us"> <span>–</span> <input id="r-htagainst" type="number" min="0" placeholder="Them"></div>
+      </div>
+      <div id="points-check" class="muted small"></div>
+    </div>
+
+    <h3 style="margin:1rem 0 .25rem">Players</h3>
+    <p class="muted small" style="margin:0 0 .5rem">Pre-filled from the Team Builder. Untick "On" for replacements who didn't get on — they won't be credited with an appearance.</p>
+    <div class="table-scroll">
+      <table class="players-table stats-entry">
+        <thead><tr><th>#</th><th>Player</th><th>Role</th><th title="Came on (replacements)">On</th><th title="Tries">T</th><th title="Conversions">C</th><th title="Penalties">P</th><th title="Drop goals">DG</th><th title="Yellow cards">YC</th><th title="Red cards">RC</th><th>Pts</th><th></th></tr></thead>
+        <tbody id="lines-tbody"></tbody>
+      </table>
+    </div>
+    <div class="actions" style="margin-top:.5rem">
+      <select id="add-line-select" style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px"></select>
+      <button type="button" id="add-line-btn" class="btn small">+ Add player</button>
+    </div>
+
+    <div class="match-fields" style="margin-top:1rem">
+      <label>Captain <select id="r-captain"></select></label>
+      <label>Player of the Match <select id="r-mom"></select></label>
+      <label class="full">Opposition scorers (optional) <input id="r-oppscorers" placeholder="e.g. 2 tries (Smith, Jones), 1 pen"></label>
+      <label class="full">Coach notes — key moments for the match report <textarea id="r-notes" rows="4" placeholder="e.g. Early yellow card for us; scrum dominant all game; late try from a lineout drive sealed it."></textarea></label>
+    </div>
+
+    <div class="actions">
+      <button type="button" id="save-match-btn" class="btn primary">Save match</button>
+      <button type="button" id="cancel-match-btn" class="btn">Close</button>
+      <button type="button" id="delete-match-btn" class="btn danger" hidden>Delete match</button>
+      <a id="report-link" class="btn" hidden>Write match report →</a>
+      <span id="match-status" class="muted small"></span>
+    </div>
+  </section>
+
+  <script id="initial-data" type="application/json">
+    <%- JSON.stringify({ squad, openId, fixtureId }) %>
+  </script>
+  <script src="/js/results.js" type="module"></script>
+</main>
+<%- include('partials/foot') %>

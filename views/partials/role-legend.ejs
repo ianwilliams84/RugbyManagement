@@ -1,0 +1,6 @@
+<%
+  // Legend for the captain / vice-captain / kicker markers.
+  // Locals: variant ('light' on dark backgrounds), color (text colour).
+  const _variant = locals.variant || '';
+  const _color = locals.color || '#0E3F1A';
+%><div class="role-legend" style="color: <%= _color %>"><span><%- include('role-badge', { label: 'C', variant: _variant }) %> Captain</span><span><%- include('role-badge', { label: 'VC', variant: _variant }) %> Vice-captain</span><span><%- include('kicker-icon', { stroke: _color }) %> Goal kicker</span></div>

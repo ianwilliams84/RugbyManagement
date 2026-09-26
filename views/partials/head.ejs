@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> — <%= (locals.club && club.name) || 'Ironsides Rugby' %></title>
+  <link rel="icon" href="/img/ironsides-crest.png">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/rugby.css">
+  <% if (locals.club && club.primaryColor) { %>
+  <style>:root { --club-green: <%= club.primaryColor %>; --club-green-dark: <%= club.primaryDark || club.primaryColor %>; }</style>
+  <% } %>
+</head>
+<body>

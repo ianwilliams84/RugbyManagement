@@ -1,0 +1,11 @@
+node_modules/
+.env
+pw.env
+data/cache/
+photos/*
+!photos/README.md
+videos/*
+!videos/README.md
+*.log
+.DS_Store
+Thumbs.db

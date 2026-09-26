@@ -1,0 +1,91 @@
+<%
+  const byId = Object.fromEntries((squad.players || []).map(p => [p.id, p]));
+  const startersCount = (selection.lineup || []).filter(Boolean).length;
+  const benchIds = (selection.bench || []).map((id, i) => ({ id, shirt: format.slots.length + i + 1 })).filter(x => x.id && byId[x.id]);
+  function marks(id) {
+    return {
+      cap: selection.captainId === id,
+      vice: selection.viceCaptainId === id,
+      kicker: selection.kickerId === id,
+    };
+  }
+  function statLine(id) {
+    const s = stats[id];
+    return s || { apps: 0, starts: 0, tries: 0, points: 0, mom: 0, last5: [] };
+  }
+%>
+<div id="team-sheet" class="team-sheet">
+  <%- include('team-sheet-header', { selection, settings, teamLabel }) %>
+
+  <section class="ts-list ts-xv">
+    <div class="ts-section-head">
+      <h3>Starting <%= format.slots.length === 15 ? 'XV' : format.slots.length %> · <%= format.label %></h3>
+      <button type="button" class="btn small ts-print-btn" id="print-sheet-btn" title="Print the team sheet on A4 portrait">Print team sheet</button>
+    </div>
+    <% if (!startersCount) { %>
+      <p class="empty">No team picked yet — open Team Builder to pick the side.</p>
+    <% } else { %>
+      <ol>
+        <% format.slots.forEach((slot, i) => {
+          const id = (selection.lineup || [])[i];
+          const p = id ? byId[id] : null;
+          const s = p ? statLine(id) : null;
+          const m = p ? marks(id) : {}; %>
+          <li class="<%= p ? '' : 'vacant' %>">
+            <span class="pos shirt"><%= slot.num %></span>
+            <span class="name"><%= p ? p.name : '— to be confirmed —' %><% if (m.cap) { %> <%- include('role-badge', { label: 'C' }) %><% } %><% if (m.vice) { %> <%- include('role-badge', { label: 'VC' }) %><% } %><% if (m.kicker) { %> <%- include('kicker-icon', {}) %><% } %></span>
+            <span class="role"><%= slot.pos %></span>
+            <span class="gap" aria-hidden="true"></span>
+            <% if (p) { %>
+              <span class="stat">
+                <span class="season"><%= settings.season.current %></span>
+                · Apps <strong><%= s.apps %></strong>
+                · Tries <strong><%= s.tries %></strong>
+                · Pts <strong><%= s.points %></strong>
+                · POTM <strong><%= s.mom %></strong>
+                · Last 5
+                <% if (s.last5.length) { %>
+                  <span class="form-strip"><% s.last5.forEach(g => { %><span class="form-pip form-<%= g.code === 'S' ? 's' : g.code === 'B' ? 'b' : 'x' %>"><%= g.code %><% if (g.tries) { %><sup><%= g.tries %></sup><% } %></span><% }) %></span>
+                <% } else { %><strong>—</strong><% } %>
+              </span>
+            <% } %>
+          </li>
+        <% }); %>
+      </ol>
+    <% } %>
+  </section>
+
+  <section class="ts-list ts-bench">
+    <div class="ts-section-head">
+      <h3>Replacements</h3>
+    </div>
+    <% if (!benchIds.length) { %>
+      <p class="empty">No replacements named.</p>
+    <% } else { %>
+      <ol>
+        <% benchIds.forEach(({ id, shirt }) => {
+          const p = byId[id];
+          const s = statLine(id);
+          const m = marks(id); %>
+          <li>
+            <span class="pos shirt"><%= shirt %></span>
+            <span class="name"><%= p.name %><% if (m.cap) { %> <%- include('role-badge', { label: 'C' }) %><% } %><% if (m.vice) { %> <%- include('role-badge', { label: 'VC' }) %><% } %><% if (m.kicker) { %> <%- include('kicker-icon', {}) %><% } %></span>
+            <span class="role"><%= (p.positions || []).join(' / ') || 'Replacement' %></span>
+            <span class="gap" aria-hidden="true"></span>
+            <span class="stat">
+              · Apps <strong><%= s.apps %></strong>
+              · Tries <strong><%= s.tries %></strong>
+              · Pts <strong><%= s.points %></strong>
+            </span>
+          </li>
+        <% }); %>
+      </ol>
+    <% } %>
+    <%- include('role-legend', {}) %>
+  </section>
+
+  <footer>
+    <span><%= settings.club.name %> · generated for Spond</span>
+    <span class="when"><%= new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' }) %></span>
+  </footer>
+</div>

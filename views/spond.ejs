@@ -1,0 +1,85 @@
+<%- include('partials/head', { title: 'Spond Export' }) %>
+<%- include('partials/nav', { active: 'spond' }) %>
+<main class="container">
+  <div class="page-head">
+    <h1>Spond Export</h1>
+    <p class="muted">Preview the team sheet and download a PNG to share in Spond. Edit details on the Team Builder page.</p>
+  </div>
+  <div class="export-actions">
+    <button id="download-btn" class="btn primary">Download team sheet PNG</button>
+    <button id="download-formation-btn" class="btn">Download formation PNG</button>
+    <a class="btn" href="/builder">Edit team</a>
+  </div>
+  <div id="sheet-wrap">
+    <%- include('partials/team-sheet-content', { squad, selection, settings, stats, format, teamLabel }) %>
+  </div>
+
+  <%
+    // Formation roster: the starting side in shirt order.
+    const byId = Object.fromEntries((squad.players || []).map(p => [p.id, p]));
+    const formationRoster = format.slots.map((slot, i) => {
+      const id = (selection.lineup || [])[i];
+      const p = id ? byId[id] : null;
+      return {
+        num: slot.num, pos: slot.pos, short: slot.short, unit: slot.unit, x: slot.x, y: slot.y,
+        id: p ? p.id : null, name: p ? p.name : '',
+        isCaptain: !!p && selection.captainId === p.id,
+        isVice: !!p && selection.viceCaptainId === p.id,
+      };
+    });
+  %>
+
+  <section class="panel" id="formation-panel">
+    <div class="ts-section-head" style="border:0;padding:0;margin-bottom:.5rem">
+      <h2 style="margin:0">Formation</h2>
+      <span id="formation-save-status" class="muted small"></span>
+    </div>
+    <p class="muted small" style="margin:0 0 .75rem">Drag each shirt to where you want them lined up. Positions save automatically per format (they belong to the shirt number, so the shape stays when you change personnel). We attack towards the top.</p>
+    <div class="fielding-layout">
+      <div id="formation-graphic" class="formation-graphic">
+        <div class="fg-head">
+          <img src="/img/ironsides-logo-transparent.png" alt="">
+          <div>
+            <strong><%= teamLabel %></strong>
+            <span><%= [selection.opposition && ((selection.homeAway === 'away' ? '@ ' : 'vs ') + selection.opposition), selection.matchDate && new Date(selection.matchDate + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })].filter(Boolean).join(' · ') %></span>
+          </div>
+        </div>
+        <div id="field" class="rugby-pitch" aria-label="Rugby pitch — drag players to position">
+          <div class="rp-ingoal rp-ingoal-top"></div>
+          <div class="rp-ingoal rp-ingoal-bottom"></div>
+          <div class="rp-line rp-try-top"></div>
+          <div class="rp-line rp-22-top"></div>
+          <div class="rp-line rp-10-top dashed"></div>
+          <div class="rp-line rp-half"></div>
+          <div class="rp-line rp-10-bottom dashed"></div>
+          <div class="rp-line rp-22-bottom"></div>
+          <div class="rp-line rp-try-bottom"></div>
+          <div class="rp-vline rp-5-left dashed"></div>
+          <div class="rp-vline rp-15-left dashed"></div>
+          <div class="rp-vline rp-15-right dashed"></div>
+          <div class="rp-vline rp-5-right dashed"></div>
+          <div class="rp-posts rp-posts-top"></div>
+          <div class="rp-posts rp-posts-bottom"></div>
+          <div class="rp-label rp-label-attack">Attack ↑</div>
+        </div>
+      </div>
+      <div class="fielding-stats">
+        <h3 class="muted small" style="margin:0 0 .25rem">Starting line-up</h3>
+        <table class="fielding-stats-table">
+          <thead><tr><th>#</th><th>Player</th><th>Position</th></tr></thead>
+          <tbody id="formation-tbody"></tbody>
+        </table>
+        <button type="button" id="formation-reset" class="btn small" style="margin-top:.5rem">Reset to default shape</button>
+      </div>
+    </div>
+  </section>
+
+  <script id="formation-data" type="application/json">
+    <%- JSON.stringify({ roster: formationRoster, positions: (selection.formationPositions || {})[selection.format] || {} }) %>
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="/js/spond.js"></script>
+  <script src="/js/formation.js" type="module"></script>
+</main>
+<%- include('partials/foot') %>

@@ -1,0 +1,199 @@
+/* Rugby-specific styles layered on top of main.css (the shared site styles). */
+
+/* Top bar: the transparent Ironsides wordmark sits straight on the club green */
+.topbar .brand img { width: auto; height: 46px; background: none; padding: 0; border-radius: 0; }
+.topbar .brand span { font-weight: 600; opacity: 0.9; border-left: 1px solid rgba(255,255,255,0.35); padding-left: 12px; }
+.topbar nav { flex-wrap: wrap; justify-content: flex-end; }
+
+select { font: inherit; }
+.match-fields select {
+  display: block; width: 100%; margin-top: 4px; padding: 8px 10px;
+  border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--text);
+}
+.match-fields textarea {
+  display: block; width: 100%; margin-top: 4px; padding: 8px 10px;
+  border: 1px solid var(--border); border-radius: 8px; background: #fff; font: inherit; color: var(--text); resize: vertical;
+}
+.match-fields label.full { grid-column: 1 / -1; }
+.table-scroll { overflow-x: auto; }
+
+/* Shirt numbers — builder rows and team sheet */
+.order-row .pos.shirt, .team-sheet .ts-list .pos.shirt {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 6px 6px 9px 9px;
+  background: var(--club-green); color: #fff; font-weight: 800; font-size: 13px;
+}
+.order-row.empty .pos.shirt { background: #cfd8d2; }
+.bench-list .order-row .pos.shirt, .team-sheet .ts-bench .pos.shirt { background: #1d2620; }
+.order-row.out-of-position { background: #fff6e0; border-color: #f0c36d; }
+.order-row.out-of-position .role { color: #8a5a00; }
+.oop-key { background: #fff6e0; border: 1px solid #f0c36d; border-radius: 4px; padding: 0 4px; color: #8a5a00; }
+.order-row .kick-mark { font-size: 12px; }
+.team-sheet .ts-list li.vacant .name { color: var(--muted); font-weight: 500; font-style: italic; }
+.team-sheet .ts-bench h3 { background: #1d2620; }
+
+/* Captain / vice-captain roundel + kicker legend */
+.role-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; padding: 0 4px; margin-left: 4px;
+  border: 1.6px solid var(--club-green-dark); border-radius: 999px;
+  font-size: 10px; font-weight: 800; line-height: 1; color: var(--club-green-dark);
+  vertical-align: 2px; background: #fff;
+}
+.role-badge.light { border-color: #fff; color: #fff; background: transparent; }
+.role-legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13px; align-items: center; margin-top: 12px; }
+.role-legend span { display: inline-flex; align-items: center; gap: 4px; }
+.cap-keeper-row select { min-width: 170px; }
+
+/* Squad page filter + W/D/L strip */
+.squad-filter { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+.squad-filter label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.squad-filter select { display: block; margin-top: 4px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; background: #fff; min-width: 140px; }
+.record-strip { display: flex; gap: 6px; margin-left: auto; }
+.record-strip > div { background: var(--club-green-light); border-radius: 8px; padding: 4px 10px; text-align: center; min-width: 44px; }
+.record-strip span { display: block; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.record-strip strong { font-size: 18px; color: var(--club-green-dark); }
+
+/* Last-5 form pips: S = started, B = off the bench, – = not involved; superscript = tries */
+.form-pip {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 22px; height: 22px; margin-right: 3px; padding: 0 4px; border-radius: 5px;
+  font-size: 11px; font-weight: 800;
+}
+.form-pip sup { font-size: 9px; margin-left: 1px; color: #b8860b; }
+.form-s { background: var(--club-green); color: #fff; }
+.form-s sup { color: #ffe27a; }
+.form-b { background: #d9e8dd; color: var(--club-green-dark); }
+.form-x { background: #eef0ee; color: #9aa59e; }
+.team-sheet .form-strip { display: inline-flex; vertical-align: middle; margin-left: 2px; }
+.team-sheet .form-pip { min-width: 18px; height: 18px; font-size: 10px; }
+.player-card .last5-line { padding: 10px 16px 12px; margin: 0; display: flex; align-items: center; gap: 4px; }
+.player-card .last5-line .last5-label { font-size: 10px; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em; margin-right: 6px; }
+
+/* Result pills (W / D / L) */
+.result-pill { display: inline-block; min-width: 20px; padding: 1px 6px; border-radius: 4px; font-size: 11px; font-weight: 800; text-align: center; color: #fff; }
+.result-pill.r-W { background: #2da44e; }
+.result-pill.r-D { background: #8c959f; }
+.result-pill.r-L { background: #cf222e; }
+
+/* Results page: score entry + per-player stats grid */
+.score-entry { display: flex; gap: 28px; align-items: flex-end; flex-wrap: wrap; margin-top: 14px; }
+.score-pair { display: flex; align-items: center; gap: 8px; margin-top: 4px; font-size: 22px; font-weight: 800; color: var(--club-green-dark); }
+.score-pair input { width: 72px; padding: 6px 8px; font-size: 22px; font-weight: 800; text-align: center; border: 1px solid var(--border); border-radius: 8px; }
+.stats-entry td, .stats-entry th { text-align: center; padding: 4px 6px; }
+.stats-entry td:nth-child(2), .stats-entry th:nth-child(2) { text-align: left; white-space: nowrap; }
+.stats-entry input.n-in { width: 52px; text-align: center; }
+.stats-entry input.shirt-in { width: 48px; }
+.stats-entry select { padding: 3px 4px; border: 1px solid var(--border); border-radius: 4px; }
+.match-list-row.active { background: var(--club-green-light); }
+.score-headline { font-size: 20px; margin: 0 0 6px; color: var(--club-green-dark); }
+.report-meta { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 10px; font-size: 13px; }
+
+/* Settings: bulk add + position tag pickers */
+.add-players { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(260px, 1.3fr); gap: 16px; margin-bottom: 14px; }
+@media (max-width: 800px) { .add-players { grid-template-columns: 1fr; } }
+.add-players label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.add-players textarea { display: block; width: 100%; margin-top: 4px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; font: inherit; resize: vertical; }
+.tag-picker { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.tag-tick { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border: 1px solid var(--border); border-radius: 999px; font-size: 12px; background: #fff; cursor: pointer; user-select: none; text-transform: none; letter-spacing: 0; color: var(--text); }
+.tag-tick input { margin: 0; width: auto; }
+.tag-tick:has(input:checked) { background: var(--club-green-light); border-color: var(--club-green); color: var(--club-green-dark); font-weight: 600; }
+.players-table .tag-picker { min-width: 240px; }
+
+/* Lineup graphic: shirt numbers + bench */
+.lineup-graphic .lg-header { grid-template-columns: 170px 1fr; }
+.lineup-graphic .lg-header img { width: 170px; height: auto; background: none; padding: 0; border-radius: 0; }
+.lineup-graphic .lg-list.lg-rugby li { font-size: 26px; line-height: 1.12; display: flex; align-items: baseline; gap: 8px; }
+.lineup-graphic .lg-num { display: inline-block; min-width: 36px; font-weight: 800; color: rgba(255,255,255,0.55); font-size: 0.8em; text-align: right; }
+.lineup-graphic .lg-list .role-badge { align-self: center; }
+.lineup-graphic .lg-bench-title { margin: 22px 0 6px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(255,255,255,0.7); border-top: 2px solid rgba(255,255,255,0.25); padding-top: 14px; }
+.lineup-graphic .lg-bench { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 16px; }
+.lineup-graphic .lg-bench li { font-size: 19px; color: #fff; display: flex; gap: 8px; align-items: baseline; }
+.lineup-graphic .lg-bench .lg-num { min-width: 28px; }
+.lineup-graphic .lg-right { background: var(--club-green-dark); }
+.lineup-graphic .lg-right img.lg-default { object-position: 30% center; }
+
+/* ── Formation editor (Spond export) ─────────────────────────────────── */
+.fielding-layout { display: flex; gap: 1.25rem; flex-wrap: wrap; align-items: flex-start; }
+.fielding-stats { flex: 1 1 240px; min-width: 220px; }
+.fielding-stats-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.fielding-stats-table th, .fielding-stats-table td { padding: 4px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+.fielding-stats-table th { background: var(--club-green-light); color: var(--club-green-dark); }
+
+.formation-graphic { flex: 1 1 420px; max-width: 520px; background: var(--club-green-dark); border-radius: 12px; padding: 12px; }
+.formation-graphic .fg-head { display: flex; align-items: center; gap: 12px; color: #fff; margin-bottom: 10px; }
+.formation-graphic .fg-head img { height: 48px; width: auto; }
+.formation-graphic .fg-head strong { display: block; font-size: 17px; }
+.formation-graphic .fg-head span { font-size: 13px; opacity: 0.85; }
+
+.rugby-pitch {
+  position: relative; width: 100%; aspect-ratio: 7 / 10;
+  background: repeating-linear-gradient(180deg, #2f8f47 0 8%, #2a8341 8% 16%);
+  border: 3px solid #eaf3ec; border-radius: 4px;
+  touch-action: none; overflow: hidden;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.rp-ingoal { position: absolute; left: 0; right: 0; height: 7%; background: rgba(0,0,0,0.12); pointer-events: none; }
+.rp-ingoal-top { top: 0; }
+.rp-ingoal-bottom { bottom: 0; }
+.rp-line { position: absolute; left: 0; right: 0; height: 0; border-top: 2px solid rgba(255,255,255,0.85); pointer-events: none; }
+.rp-line.dashed { border-top-style: dashed; opacity: 0.6; }
+.rp-vline.dashed { border-left-style: dashed; opacity: 0.6; }
+.rp-try-top { top: 7%; }
+.rp-22-top { top: 26%; }
+.rp-10-top { top: 43%; }
+.rp-half { top: 50%; }
+.rp-10-bottom { top: 57%; }
+.rp-22-bottom { top: 74%; }
+.rp-try-bottom { top: 93%; }
+.rp-vline { position: absolute; top: 7%; bottom: 7%; width: 0; border-left: 2px solid rgba(255,255,255,0.85); pointer-events: none; }
+.rp-5-left { left: 7%; }
+.rp-15-left { left: 21%; }
+.rp-15-right { left: 79%; }
+.rp-5-right { left: 93%; }
+.rp-posts { position: absolute; left: 50%; width: 10%; height: 3%; transform: translateX(-50%); border: 3px solid #fff; border-bottom: none; pointer-events: none; }
+.rp-posts-top { top: 4%; }
+.rp-posts-bottom { bottom: 4%; transform: translateX(-50%) rotate(180deg); }
+.rp-label { position: absolute; right: 2%; top: 1%; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.85); pointer-events: none; }
+
+.pitch-chip {
+  position: absolute; transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  cursor: grab; user-select: none; touch-action: none;
+}
+.pitch-chip .pc-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 7px 7px 11px 11px;
+  background: #fff; color: var(--club-green-dark); border: 2px solid #111;
+  font-weight: 800; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.35);
+}
+.pitch-chip.is-back .pc-num { background: #111; color: #fff; border-color: #fff; }
+.pitch-chip .pc-name {
+  font-size: 10px; font-weight: 700; color: #fff; white-space: nowrap;
+  background: rgba(0,0,0,0.45); padding: 0 5px; border-radius: 4px;
+}
+.pitch-chip.is-vacant { opacity: 0.55; }
+.pitch-chip.dragging { cursor: grabbing; z-index: 5; }
+.pitch-chip.dragging .pc-num { box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+
+/* Hide in-sheet buttons while rendering a PNG */
+body.rendering-png .team-sheet .ts-section-head .btn { display: none !important; }
+
+/* ── Print ───────────────────────────────────────────────────────────── */
+@media print {
+  @page { size: A4 portrait; margin: 12mm; }
+  .topbar, .page-head, .export-actions, .ts-print-btn { display: none !important; }
+  .team-sheet { width: auto; box-shadow: none; border: none; padding: 0; }
+  .team-sheet h3, .team-sheet .pos.shirt, .form-pip, .role-badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  /* Formation diagram on its own page, kept whole */
+  #formation-panel { break-before: page; page-break-before: always; break-inside: avoid; border: 0; box-shadow: none; padding: 0; }
+  #formation-panel .formation-graphic, #formation-panel .pitch-chip .pc-num { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  #formation-reset, #formation-save-status { display: none !important; }
+  /* "Print team sheet" button: just the sheet, no formation page */
+  body.print-sheet-only #formation-panel { display: none !important; }
+  body.print-sheet-only .team-sheet .ts-list li { padding: 5px 4px; }
+}
+
+/* Team sheet rows: fixed name + position columns so every stats line starts at the same x */
+.team-sheet .ts-list li { grid-template-columns: 28px 200px 160px 0 1fr; }
+.lineup-graphic .lg-header h1 { font-size: 56px; }

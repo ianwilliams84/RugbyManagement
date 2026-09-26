@@ -1,0 +1,72 @@
+<%- include('partials/head', { title: 'Lineup Photo' }) %>
+<%- include('partials/nav', { active: 'lineup' }) %>
+<main class="container">
+  <div class="page-head">
+    <h1>Lineup Photo</h1>
+    <p class="muted">Sky-Sports-style team graphic. Pick a featured player; their photo bleeds into the right side. Drop player photos in <code>photos/</code> as <code>&lt;player id&gt;.jpg</code> (ids are listed in Settings → Players). Without a photo the club shirt is used.</p>
+  </div>
+
+  <%
+    const byId = Object.fromEntries((squad.players || []).map(p => [p.id, p]));
+    const starters = format.slots.map((slot, i) => ({ slot, id: (selection.lineup || [])[i] })).filter(x => x.id && byId[x.id]);
+    const bench = (selection.bench || []).map((id, i) => ({ num: format.slots.length + i + 1, id })).filter(x => x.id && byId[x.id]);
+    const splitName = (name) => { const parts = (name || '').trim().split(/\s+/); const last = parts.pop() || ''; return { first: parts.join(' '), last }; };
+    const featured = starters[0]?.id;
+    const featuredPhoto = featured ? photoMap[featured] : null;
+  %>
+
+  <div class="lineup-controls panel">
+    <label>Featured player
+      <select id="featured-player">
+        <% [...starters.map(x => x.id), ...bench.map(x => x.id)].forEach((id) => { const p = byId[id]; %>
+          <option value="<%= p.id %>" <%= settings.lineup.featuredPlayerId === p.id ? 'selected' : '' %>><%= p.name %></option>
+        <% }); %>
+        <% if (!starters.length && !bench.length) { %>
+          <option value="">— pick a team first in Team Builder —</option>
+        <% } %>
+      </select>
+    </label>
+    <label>Subtitle <input id="subtitle" placeholder="vs Opposition · Date" value="<%= [selection.opposition && ((selection.homeAway === 'away' ? '@ ' : 'vs ') + selection.opposition), selection.matchDate && new Date(selection.matchDate + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })].filter(Boolean).join(' · ') %>"></label>
+    <button id="download-btn" class="btn primary">Download PNG</button>
+  </div>
+
+  <div id="sheet-wrap">
+    <div id="lineup-graphic" class="lineup-graphic">
+      <div class="lg-left" style="background: <%= settings.club.primaryColor %>">
+        <div class="lg-header">
+          <img src="/img/ironsides-logo-transparent.png" alt="">
+          <div>
+            <h1><%= (settings.club.shortName || 'Ironsides').toUpperCase() %></h1>
+            <p id="lg-subtitle" class="lg-subtitle"></p>
+          </div>
+        </div>
+        <ol class="lg-list lg-rugby" id="lg-list">
+          <% starters.forEach(({ slot, id }) => {
+            const p = byId[id]; const n = splitName(p.name); %>
+            <li><span class="lg-num"><%= slot.num %></span><span class="first"><%= n.first %></span> <strong class="last"><%= n.last %></strong><% if (selection.captainId === id) { %> <%- include('partials/role-badge', { label: 'C', variant: 'light' }) %><% } %><% if (selection.viceCaptainId === id) { %> <%- include('partials/role-badge', { label: 'VC', variant: 'light' }) %><% } %></li>
+          <% }); %>
+        </ol>
+        <% if (bench.length) { %>
+          <p class="lg-bench-title">Replacements</p>
+          <ol class="lg-bench">
+            <% bench.forEach(({ num, id }) => { const n = splitName(byId[id].name); %>
+              <li><span class="lg-num"><%= num %></span><%= n.first ? n.first[0] + '. ' : '' %><strong><%= n.last %></strong></li>
+            <% }); %>
+          </ol>
+        <% } %>
+      </div>
+      <div class="lg-right" id="lg-right">
+        <% if (featuredPhoto) { %>
+          <img src="<%= featuredPhoto %>" alt="" id="lg-featured-img">
+        <% } else { %>
+          <img src="/img/ironsides-shirt-badge.png" alt="" id="lg-featured-img" class="lg-default">
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <script id="initial-data" type="application/json"><%- JSON.stringify({ photoMap }) %></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="/js/lineup.js"></script>
+</main>
+<%- include('partials/foot') %>
