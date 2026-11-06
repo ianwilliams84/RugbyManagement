@@ -13,7 +13,9 @@ A rugby sibling of the BICC Team Management site.
 npm install
 ```
 
-Credentials live in `pw.env` (gitignored). Copy `BLANK pw.env` to `pw.env` and fill in:
+Credentials live outside the repo in `..\secrets\ironsides.env` (the shared
+`dev\secrets` folder; set `IRONSIDES_ENV` to use a different path). Copy
+`BLANK pw.env` there and fill in:
 
 ```
 SPOND_EMAIL=you@example.com
@@ -53,7 +55,14 @@ Open http://localhost:3001.
 
 ## Data
 
-Stored as JSON in `data/`:
+Player names and photos never go in the repo. By default everything is stored
+in the gitignored `data/`, `photos/` and `videos/` folders. To share one squad
+between PCs, set `IRONSIDES_DATA_DIR` in the secrets file to a shared folder
+(e.g. `\\IanNAS\home\IronsidesRugbyData`). The JSON files, `photos/` and
+`videos/` then live there. The server won't start if that folder can't be
+reached, so it can't quietly create an empty local squad instead.
+
+The JSON files:
 
 - `squad.json`: players `{ id, name, positions, teams, notes }`
 - `selection.json`: the Team Builder's current matchday squad

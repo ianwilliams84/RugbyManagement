@@ -3,7 +3,11 @@ import { spondJson } from './auth.js';
 export async function listEvents({ max = 30 } = {}) {
   // NB: `includeHidden=true` now 400s ("only available inside a group"), so it's
   // dropped here — this lists the account's upcoming events directly.
-  return spondJson(`/sponds?max=${max}&includeComments=false`);
+  // Without a start bound Spond returns the furthest-future events first, so
+  // `max` cut off the nearest ones. Ask for events that haven't ended (with a
+  // 12h grace so today's match stays listed), soonest first.
+  const minEnd = new Date(Date.now() - 12 * 3600 * 1000).toISOString();
+  return spondJson(`/sponds?max=${max}&includeComments=false&order=asc&minEndTimestamp=${encodeURIComponent(minEnd)}`);
 }
 
 export async function getEvent(eventId) {
@@ -86,7 +90,24 @@ export function extractAvailability(event) {
       });
     }
   }
-  return members;
+  // recipients.group.members is the whole group, not just who was invited — a
+  // match picking 23 of an 86-strong group listed the other 63 as "unanswered".
+  // Keep only people with a response entry (or whose parent has one).
+  if (!status.size) return members;
+  return members.filter(m => status.has(m.id) || (m.parentId && status.has(m.parentId)));
+}
+
+// Names of the players in an event's Spond group, for seeding the squad. In a
+// junior group the players are the members with guardians attached; members
+// without one are the coaches and parents. A group with no guardians at all is
+// an adult side, so everyone counts.
+export function groupPlayerNames(event) {
+  const members = event.recipients?.group?.members || [];
+  const junior = members.some(m => (m.guardians || []).length);
+  return members
+    .filter(m => !junior || (m.guardians || []).length)
+    .map(m => { const n = pickName(m); return `${n.firstName} ${n.lastName}`.trim(); })
+    .filter(Boolean);
 }
 
 // Normalise a name for matching: lowercase, strip diacritics/zero-width/apostrophes,

@@ -1,18 +1,9 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { DEFAULT_FORMAT, getFormat, normaliseFormat, seasonForDate } from '../public/js/rugby.js';
+import { projectRoot, dataDir, photosDir, videosDir } from './envPath.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const projectRoot = path.join(__dirname, '..');
-const dataDir = path.join(projectRoot, 'data');
-
-export const paths = {
-  projectRoot,
-  dataDir,
-  photosDir: path.join(projectRoot, 'photos'),
-  videosDir: path.join(projectRoot, 'videos'),
-};
+export const paths = { projectRoot, dataDir, photosDir, videosDir };
 
 async function readJson(file, fallback) {
   try {

@@ -1,7 +1,6 @@
+import { projectRoot, dataRoot, dataDir, photosDir } from './envPath.js';   // first: loads the env file
 import express from 'express';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import dotenv from 'dotenv';
 
 import squadRouter from './routes/squad.js';
 import builderRouter from './routes/builder.js';
@@ -15,17 +14,13 @@ import playersRouter from './routes/players.js';
 import fixturesRouter from './routes/fixtures.js';
 import { loadSettings } from './data.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const projectRoot = path.join(__dirname, '..');
-
-dotenv.config({ path: path.join(projectRoot, 'pw.env') });
-dotenv.config({ path: path.join(projectRoot, '.env') });
+console.log(dataRoot ? `Data: shared folder ${dataRoot}` : `Data: local ${dataDir}`);
 
 const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(projectRoot, 'views'));
 app.use(express.static(path.join(projectRoot, 'public')));
-app.use('/photos', express.static(path.join(projectRoot, 'photos')));
+app.use('/photos', express.static(photosDir));
 app.use(express.json({ limit: '512kb' }));
 app.use(express.urlencoded({ extended: true }));
 

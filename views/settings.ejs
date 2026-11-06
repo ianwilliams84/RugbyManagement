@@ -3,7 +3,7 @@
 <main class="container settings-page">
   <div class="page-head">
     <h1>Settings</h1>
-    <p class="muted">Tool-wide configuration. Secrets like the Spond password live in <code>pw.env</code>.</p>
+    <p class="muted">Tool-wide configuration. Secrets like the Spond password live in <code>dev\secrets\ironsides.env</code>, outside the repo.</p>
   </div>
 
   <section class="panel">
@@ -46,7 +46,7 @@
       <button type="button" id="spond-events-btn" class="btn">Fetch upcoming events</button>
       <span id="spond-status" class="muted small"></span>
     </div>
-    <p class="muted small" style="margin:.25rem 0 0">Use "Save &amp; sign in" to update the email/password and force a fresh login (credentials are saved to <code>pw.env</code> so they persist across restarts). "Test" just re-uses the currently-cached token.</p>
+    <p class="muted small" style="margin:.25rem 0 0">Use "Save &amp; sign in" to update the email/password and force a fresh login (credentials are saved to <code>dev\secrets\ironsides.env</code> so they persist across restarts). "Test" just re-uses the currently-cached token.</p>
     <div id="spond-events-list" class="spond-events" hidden></div>
 
     <h2>Match Report (AI)</h2>
@@ -139,7 +139,7 @@
     const email = (emailEl.value || '').trim();
     const password = passEl.value || '';
     if (!email) { s.textContent = 'Enter the Spond email address.'; return; }
-    if (!password) { s.textContent = 'Enter the password (it is not stored in the browser; the server saves it to pw.env).'; return; }
+    if (!password) { s.textContent = 'Enter the password (it is not stored in the browser; the server saves it to the secrets file).'; return; }
     s.textContent = 'Signing in…';
     try {
       const res = await fetch('/spond-availability/relogin', {
@@ -149,7 +149,7 @@
       });
       const json = await res.json();
       if (json.ok) {
-        s.textContent = `Signed in — saved to pw.env (${json.email || email}).`;
+        s.textContent = `Signed in — saved to the secrets file (${json.email || email}).`;
         passEl.value = '';
       } else {
         s.textContent = 'Failed: ' + (json.error || res.statusText);

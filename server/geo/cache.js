@@ -1,9 +1,8 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { dataDir } from '../envPath.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const cacheDir = path.join(__dirname, '..', '..', 'data', 'cache');
+const cacheDir = path.join(dataDir, 'cache');
 
 async function ensureDir() {
   await fs.mkdir(cacheDir, { recursive: true });

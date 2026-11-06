@@ -500,6 +500,7 @@ async function importSpondEvent(eventId) {
     if (json.unmatchedSpond?.length) {
       const names = json.unmatchedSpond.map(p => `${p.name} (${p.status})`).join(', ');
       detailHtml += `<div class="muted small" style="margin-top:4px"><strong>Spond extras (not in squad):</strong> ${escapeHtml(names)}</div>`;
+      detailHtml += `<button type="button" id="spond-add-squad" class="btn" style="margin-top:6px">Add Spond players to squad</button>`;
     }
     let detail = document.getElementById('spond-detail');
     if (!detail) {
@@ -508,6 +509,7 @@ async function importSpondEvent(eventId) {
       summary.insertAdjacentElement('afterend', detail);
     }
     detail.innerHTML = detailHtml;
+    document.getElementById('spond-add-squad')?.addEventListener('click', () => addSpondPlayersToSquad(eventId));
 
     renderPool();
   } catch (e) {
@@ -515,6 +517,33 @@ async function importSpondEvent(eventId) {
   } finally {
     btn.disabled = false;
     btn.textContent = orig;
+  }
+}
+
+// Seed the squad from the event's Spond group, re-match RSVPs against the new
+// players, then reload so the pool (built from the page's squad data) shows them.
+async function addSpondPlayersToSquad(eventId) {
+  const btn = document.getElementById('spond-add-squad');
+  const summary = document.getElementById('spond-summary');
+  if (btn) { btn.disabled = true; btn.textContent = 'Adding…'; }
+  try {
+    const res = await fetch('/spond-availability/add-to-squad', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventId }),
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'Add failed');
+    summary.textContent = `Added ${json.added} players — refreshing…`;
+    await fetch('/spond-availability/import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventId, sourceUrl: `https://spond.com/client/sponds/${eventId}/` }),
+    });
+    location.reload();
+  } catch (e) {
+    summary.textContent = 'Error: ' + e.message;
+    if (btn) { btn.disabled = false; btn.textContent = 'Add Spond players to squad'; }
   }
 }
 

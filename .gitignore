@@ -1,7 +1,7 @@
 node_modules/
 .env
 pw.env
-data/cache/
+data/
 photos/*
 !photos/README.md
 videos/*

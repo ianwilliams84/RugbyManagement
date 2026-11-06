@@ -1,13 +1,12 @@
 import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { loadSquad, loadSelection, saveSelection, loadSettings } from '../data.js';
-import { listEvents, getEvent, extractAvailability, autoMatch } from '../spond/api.js';
+import { loadSquad, saveSquad, loadSelection, saveSelection, loadSettings, newId, paths } from '../data.js';
+import { listEvents, getEvent, extractAvailability, autoMatch, groupPlayerNames } from '../spond/api.js';
 import { loginInfo, reloginWith, configuredEmail } from '../spond/auth.js';
+import { secretsEnvPath } from '../envPath.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DEBUG_DIR = path.join(__dirname, '..', '..', 'data', 'cache');
+const DEBUG_DIR = path.join(paths.dataDir, 'cache');
 
 const router = express.Router();
 
@@ -21,22 +20,21 @@ router.post('/test', async (req, res) => {
 });
 
 // Re-login with new credentials. Body: { email, password }. Both required.
-// On success the new creds are also persisted to pw.env (preserving any
-// other lines in that file) so they survive a server restart.
+// On success the new creds are also persisted to the secrets env file
+// (preserving any other lines in that file) so they survive a server restart.
 router.post('/relogin', async (req, res) => {
   const { email, password } = req.body || {};
   if (!email || !password) return res.status(400).json({ ok: false, error: 'Both email and password are required.' });
   try {
     await reloginWith({ email, password });
-    // Persist to pw.env (best-effort — auth still works for this session even if writing fails)
+    // Persist to the secrets file (best-effort — auth still works for this session even if writing fails)
     try {
-      const envPath = path.join(__dirname, '..', '..', 'pw.env');
       let text = '';
-      try { text = await fs.readFile(envPath, 'utf8'); } catch {}
+      try { text = await fs.readFile(secretsEnvPath, 'utf8'); } catch {}
       text = upsertEnvLine(text, 'SPOND_EMAIL', email);
       text = upsertEnvLine(text, 'SPOND_PASSWORD', password);
-      await fs.writeFile(envPath, text, 'utf8');
-    } catch (e) { console.error('Could not persist pw.env:', e.message); }
+      await fs.writeFile(secretsEnvPath, text, 'utf8');
+    } catch (e) { console.error(`Could not persist ${secretsEnvPath}:`, e.message); }
     res.json({ ok: true, email: configuredEmail() });
   } catch (e) {
     res.status(401).json({ ok: false, error: e.message });
@@ -67,6 +65,30 @@ router.post('/events', async (req, res) => {
         memberCount: (e.recipients?.group?.members || []).length,
       })),
     });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// Add every player in the event's Spond group who isn't already in the squad
+// (matched on name, case-insensitive). Body: { eventId }.
+router.post('/add-to-squad', async (req, res) => {
+  try {
+    const eventId = req.body?.eventId;
+    if (!eventId) return res.status(400).json({ ok: false, error: 'Pick a Spond event first.' });
+    const event = await getEvent(eventId);
+    const squad = await loadSquad();
+    const existing = new Set(squad.players.map(p => p.name.trim().toLowerCase()));
+    let added = 0;
+    for (const name of groupPlayerNames(event)) {
+      const clean = name.replace(/\s+/g, ' ').slice(0, 100);
+      if (existing.has(clean.toLowerCase())) continue;
+      existing.add(clean.toLowerCase());
+      squad.players.push({ id: newId('p'), name: clean, positions: [], teams: [], notes: '' });
+      added++;
+    }
+    await saveSquad(squad);
+    res.json({ ok: true, added, total: squad.players.length });
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message });
   }
