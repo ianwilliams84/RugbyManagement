@@ -2,17 +2,31 @@ import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 
+// Resolved on every call, not once at startup: the VS Code extension's copy
+// moves to a new versioned folder (and the old one is deleted) on each update.
 function resolveClaudeCmd() {
-  // 1) On PATH
-  // 2) npm global bin: %APPDATA%\npm\claude.cmd
-  const appData = process.env.APPDATA;
-  if (appData) {
-    const candidate = path.join(appData, 'npm', 'claude.cmd');
-    if (fs.existsSync(candidate)) return `"${candidate}"`;
-  }
+  // 0) Explicit override
+  if (process.env.CLAUDE_CLI_PATH && fs.existsSync(process.env.CLAUDE_CLI_PATH)) return `"${process.env.CLAUDE_CLI_PATH}"`;
+  // 1) npm global bin: %APPDATA%\npm\claude.cmd
+  // 2) native installer: %USERPROFILE%\.local\bin\claude.exe
+  const candidates = [
+    process.env.APPDATA && path.join(process.env.APPDATA, 'npm', 'claude.cmd'),
+    process.env.USERPROFILE && path.join(process.env.USERPROFILE, '.local', 'bin', 'claude.exe'),
+  ].filter(Boolean);
+  for (const c of candidates) if (fs.existsSync(c)) return `"${c}"`;
+  // 3) the copy bundled with the VS Code extension (newest version wins)
+  const extDir = process.env.USERPROFILE && path.join(process.env.USERPROFILE, '.vscode', 'extensions');
+  try {
+    const bundled = fs.readdirSync(extDir)
+      .filter(d => d.startsWith('anthropic.claude-code-'))
+      .map(d => path.join(extDir, d, 'resources', 'native-binary', 'claude.exe'))
+      .filter(p => fs.existsSync(p))
+      .sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
+    if (bundled.length) return `"${bundled[0]}"`;
+  } catch { /* no VS Code extensions folder */ }
+  // 4) On PATH
   return 'claude';
 }
-const CLAUDE_CMD = resolveClaudeCmd();
 
 const SYSTEM_PROMPT = `You write match reports for an amateur rugby union club's website and members' group, in the style of a Sky Sports / BBC Sport rugby report.
 
@@ -57,7 +71,7 @@ export async function generateMatchReport({ summary, tone = '', lengthWords = 50
 
 function runClaudeCli(prompt) {
   return new Promise((resolve, reject) => {
-    const cmd = `${CLAUDE_CMD} -p --output-format json --max-turns 1`;
+    const cmd = `${resolveClaudeCmd()} -p --output-format json --max-turns 1`;
     const proc = spawn(cmd, { shell: true, windowsHide: true });
 
     let stdout = '';
@@ -114,7 +128,7 @@ function runClaudeCli(prompt) {
 
 export function detectClaudeCli() {
   return new Promise((resolve) => {
-    const proc = spawn(`${CLAUDE_CMD} --version`, { shell: true, windowsHide: true });
+    const proc = spawn(`${resolveClaudeCmd()} --version`, { shell: true, windowsHide: true });
     const timer = setTimeout(() => { try { proc.kill(); } catch {} resolve(false); }, 5000);
     proc.on('error', () => { clearTimeout(timer); resolve(false); });
     proc.on('close', code => { clearTimeout(timer); resolve(code === 0); });

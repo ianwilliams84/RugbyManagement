@@ -39,10 +39,13 @@ function allPicked() { return [...state.lineup, ...state.bench].filter(Boolean);
 function isPicked(id) { return state.lineup.includes(id) || state.bench.includes(id); }
 function shirtFor(list, idx) { return list === 'bench' ? fmt().slots.length + idx + 1 : fmt().slots[idx].num; }
 
-// Remove a player from wherever they are in the side.
+// Remove a player from wherever they are in the side. Mutates in place:
+// callers hold a reference to state.lineup / state.bench (e.g. the drop
+// target), and swapping in new arrays left their writes on a stale copy.
 function unplace(id) {
-  state.lineup = state.lineup.map(x => x === id ? null : x);
-  state.bench = state.bench.map(x => x === id ? null : x);
+  for (const list of [state.lineup, state.bench]) {
+    for (let i = 0; i < list.length; i++) if (list[i] === id) list[i] = null;
+  }
 }
 
 // Switch the match format (15s / 13s / 10s / 7s). Players keep their shirt
@@ -339,8 +342,9 @@ function renderPool() {
     (statusRank(a) - statusRank(b)) || (teamRank(a) - teamRank(b)) || (a.name || '').localeCompare(b.name || ''));
 
   for (const p of sorted) {
-    // Players already in the side or on the bench aren't shown — the pool only lists who's left.
-    if (isPicked(p.id)) continue;
+    // Players already in the side or on the bench stay in place, greyed out,
+    // so the grid doesn't reshuffle under you as you pick.
+    const picked = isPicked(p.id);
     const tags = p.positions || [];
     if (filter === 'fwd' && tags.length && !tags.some(t => FORWARD_TAGS.includes(t))) continue;
     if (filter === 'back' && tags.length && !tags.some(t => BACK_TAGS.includes(t))) continue;
@@ -348,8 +352,8 @@ function renderPool() {
     const notInvolved = hasImport && !data.selection.availability?.[p.id];
 
     const li = document.createElement('li');
-    li.className = 'pool-row' + ` rsvp-${status}` + (notInvolved ? ' not-involved' : '');
-    const tooltip = notInvolved ? 'Not on this Spond event' : `Spond: ${status}`;
+    li.className = 'pool-row' + ` rsvp-${status}` + (notInvolved ? ' not-involved' : '') + (picked ? ' in-order' : '');
+    const tooltip = picked ? 'Already picked' : notInvolved ? 'Not on this Spond event' : `Spond: ${status}`;
     const teams = (p.teams || []).filter(n => n >= 1 && n <= 3);
     const teamBadge = teams.length ? `<span class="team-badge t-${teams.join('')}" title="${escapeHtml(teams.map(t => data.teamNames[t - 1]).join(', '))}">${teams.join('/')}</span>` : '';
     const s = data.stats?.[p.id];
@@ -359,6 +363,7 @@ function renderPool() {
     if (poolSelection.has(p.id)) li.classList.add('multi-selected');
     li.innerHTML = `<span class="status-dot status-${status}" title="${tooltip}"></span><span class="name" title="${escapeHtml(statTip)}">${escapeHtml(p.name)}</span>${teamBadge}<span class="role">${escapeHtml(tags.join(' / '))}</span>`;
     li.addEventListener('click', () => {
+      if (picked) return;
       if (poolSelection.has(p.id)) poolSelection.delete(p.id);
       else poolSelection.add(p.id);
       renderPool();
@@ -380,7 +385,7 @@ function renderPool() {
     availableUl.appendChild(li);
   }
   if (!availableUl.children.length) {
-    availableUl.innerHTML = `<li class="muted small" style="padding:6px">${data.squad.players.length ? 'Everyone is picked.' : 'No players yet — add them in Settings → Players.'}</li>`;
+    availableUl.innerHTML = `<li class="muted small" style="padding:6px">${data.squad.players.length ? 'No players match this filter.' : 'No players yet — add them in Settings → Players.'}</li>`;
   }
 
   for (const id of [...poolSelection]) if (isPicked(id)) poolSelection.delete(id);
@@ -482,11 +487,12 @@ async function importSpondEvent(eventId) {
       `${counts.declined || 0} out`,
       `${counts.unanswered || 0} pending`,
     ];
-    if (json.unmatchedSquad?.length) parts.push(`${json.unmatchedSquad.length} squad unmatched`);
+    if (json.unmatchedSquad?.length) parts.push(`${json.unmatchedSquad.length} not invited`);
     if (json.unmatchedSpond?.length) parts.push(`${json.unmatchedSpond.length} extra in Spond`);
     summary.textContent = parts.join(' · ');
 
-    // Show unmatched names + closest-Spond suggestion so the user can spot the problem
+    // Name lists go below the pool, folded away, so they never push the
+    // players out of reach. The closest-Spond hint helps spot a misspelling.
     let detailHtml = '';
     if (json.unmatchedSquad?.length) {
       const rows = json.unmatchedSquad.map(p => {
@@ -495,18 +501,18 @@ async function importSpondEvent(eventId) {
           : '';
         return `<li>${escapeHtml(p.squadName)}${hint}</li>`;
       }).join('');
-      detailHtml += `<div class="muted small" style="margin-top:6px"><strong>Squad not matched:</strong><ul style="margin:.2rem 0 0 0;padding-left:1.2rem">${rows}</ul></div>`;
+      detailHtml += `<details class="muted small" style="margin-top:8px"><summary><strong>Squad not on this Spond event (${json.unmatchedSquad.length})</strong></summary><ul style="margin:.2rem 0 0 0;padding-left:1.2rem">${rows}</ul></details>`;
     }
     if (json.unmatchedSpond?.length) {
       const names = json.unmatchedSpond.map(p => `${p.name} (${p.status})`).join(', ');
-      detailHtml += `<div class="muted small" style="margin-top:4px"><strong>Spond extras (not in squad):</strong> ${escapeHtml(names)}</div>`;
-      detailHtml += `<button type="button" id="spond-add-squad" class="btn" style="margin-top:6px">Add Spond players to squad</button>`;
+      detailHtml += `<details class="muted small" style="margin-top:6px"><summary><strong>Spond extras, not in squad (${json.unmatchedSpond.length})</strong></summary>${escapeHtml(names)}`
+        + `<div><button type="button" id="spond-add-squad" class="btn" style="margin-top:6px">Add Spond players to squad</button></div></details>`;
     }
     let detail = document.getElementById('spond-detail');
     if (!detail) {
       detail = document.createElement('div');
       detail.id = 'spond-detail';
-      summary.insertAdjacentElement('afterend', detail);
+      document.getElementById('squad-pool').insertAdjacentElement('afterend', detail);
     }
     detail.innerHTML = detailHtml;
     document.getElementById('spond-add-squad')?.addEventListener('click', () => addSpondPlayersToSquad(eventId));

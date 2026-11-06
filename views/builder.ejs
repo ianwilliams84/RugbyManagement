@@ -70,20 +70,6 @@
       <p class="muted small" style="margin-top:.25rem">Drop a player on a shirt number · drag rows to swap. <span class="oop-key">Amber</span> = playing out of their listed positions.</p>
       <ol id="lineup" class="droplist"></ol>
     </section>
-    <section class="panel">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
-        <h2 style="margin:0">Replacements</h2>
-        <div style="display:flex;align-items:center;gap:8px">
-          <label class="muted small" style="display:flex;align-items:center;gap:4px">Bench
-            <select id="m-bench-size"></select>
-          </label>
-          <button id="clear-bench-btn" type="button" class="btn small">Clear</button>
-        </div>
-      </div>
-      <p class="muted small" style="margin-top:.25rem">Drop pool players here · drag between the bench and the starting side to swap.</p>
-      <ol id="bench" class="droplist bench-list"></ol>
-      <div id="unit-summary" class="unit-summary"></div>
-    </section>
     <aside class="panel pool">
       <div class="pool-head">
         <h2>Squad Pool</h2>
@@ -120,6 +106,20 @@
       </h3>
       <ul id="squad-pool" class="poollist"></ul>
     </aside>
+    <section class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+        <h2 style="margin:0">Replacements</h2>
+        <div style="display:flex;align-items:center;gap:8px">
+          <label class="muted small" style="display:flex;align-items:center;gap:4px">Bench
+            <select id="m-bench-size"></select>
+          </label>
+          <button id="clear-bench-btn" type="button" class="btn small">Clear</button>
+        </div>
+      </div>
+      <p class="muted small" style="margin-top:.25rem">Drop pool players here · drag between the bench and the starting side to swap.</p>
+      <ol id="bench" class="droplist bench-list"></ol>
+      <div id="unit-summary" class="unit-summary"></div>
+    </section>
   </div>
 
   <script id="initial-data" type="application/json">
