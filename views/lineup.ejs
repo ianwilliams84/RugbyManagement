@@ -26,7 +26,7 @@
         <% } %>
       </select>
     </label>
-    <label>Subtitle <input id="subtitle" placeholder="vs Opposition · Date" value="<%= [selection.opposition && ((selection.homeAway === 'away' ? '@ ' : 'vs ') + selection.opposition), selection.matchDate && new Date(selection.matchDate + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })].filter(Boolean).join(' · ') %>"></label>
+    <label>Subtitle <input id="subtitle" placeholder="Team vs Opposition · Date" value="<%= [[selection.team && teamName, selection.opposition && ((selection.homeAway === 'away' ? '@ ' : 'vs ') + selection.opposition)].filter(Boolean).join(' '), selection.matchDate && new Date(selection.matchDate + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })].filter(Boolean).join(' · ') %>"></label>
     <button id="download-btn" class="btn primary">Download PNG</button>
   </div>
 

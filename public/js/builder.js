@@ -143,6 +143,7 @@ function payload() {
     venue: document.getElementById('m-venue').value,
     homeAway: document.getElementById('m-homeaway').value,
     team: Number(document.getElementById('m-team').value) || 1,
+    teamName: document.getElementById('m-team-name').value,
     fixtureId: state.fixtureId,
     format: state.format,
     benchSize: state.benchSize,
@@ -436,11 +437,17 @@ document.getElementById('clear-bench-btn')?.addEventListener('click', () => {
 });
 
 // Auto-save when match metadata changes
-['m-title', 'm-date', 'm-kickoff', 'm-opposition', 'm-venue', 'm-homeaway'].forEach(id => {
+['m-title', 'm-team-name', 'm-date', 'm-kickoff', 'm-opposition', 'm-venue', 'm-homeaway'].forEach(id => {
   const el = document.getElementById(id);
   if (el) el.addEventListener('input', () => scheduleSave());
 });
-document.getElementById('m-team')?.addEventListener('change', () => { renderPool(); scheduleSave(); });
+document.getElementById('m-team')?.addEventListener('change', (e) => {
+  // A blank name box shows the chosen squad's name as its hint
+  const nameBox = document.getElementById('m-team-name');
+  if (nameBox) nameBox.placeholder = e.target.selectedOptions[0]?.textContent || '';
+  renderPool();
+  scheduleSave();
+});
 document.getElementById('m-format')?.addEventListener('change', (e) => setFormat(e.target.value));
 document.getElementById('m-bench-size')?.addEventListener('change', (e) => setBenchSize(e.target.value));
 document.getElementById('pool-position-filter')?.addEventListener('change', () => renderPool());

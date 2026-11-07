@@ -20,8 +20,9 @@
     <p id="next-fixture-status" class="muted small" style="margin:.25rem 0 0"></p>
     <div class="match-fields">
       <label>Match title <input id="m-title" value="<%= selection.matchTitle || '' %>" placeholder="e.g. League match"></label>
-      <label>Team
-        <select id="m-team">
+      <label>Team name <input id="m-team-name" value="<%= selection.teamName || '' %>" placeholder="<%= settings.teams.names[Number(selection.team) - 1] || `Team ${selection.team}` %>" title="Shown on the lineup photo and team sheet. Leave blank to use the squad name."></label>
+      <label>Squad
+        <select id="m-team" title="Which squad this is for: sorts the player pool, picks the next fixture and files the result">
           <% settings.teams.names.forEach((n, i) => { %><option value="<%= i + 1 %>" <%= Number(selection.team) === i + 1 ? 'selected' : '' %>><%= n || `Team ${i + 1}` %></option><% }) %>
         </select>
       </label>

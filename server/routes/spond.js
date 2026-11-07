@@ -1,5 +1,5 @@
 import express from 'express';
-import { loadSquad, loadSelection, saveSelection, loadSettings, loadMatches, teamName } from '../data.js';
+import { loadSquad, loadSelection, saveSelection, loadSettings, loadMatches, selectionTeamName } from '../data.js';
 import { computeStats } from '../stats.js';
 import { getFormat } from '../../public/js/rugby.js';
 
@@ -12,7 +12,7 @@ router.get('/', async (req, res, next) => {
     res.render('spond', {
       squad, selection, settings, stats,
       format: getFormat(selection.format),
-      teamLabel: teamName(settings, selection.team),
+      teamLabel: selectionTeamName(settings, selection),
     });
   } catch (e) { next(e); }
 });

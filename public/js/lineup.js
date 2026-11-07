@@ -5,6 +5,10 @@ const subtitleEl = document.getElementById('lg-subtitle');
 const featuredImgWrap = document.getElementById('lg-right');
 
 const SUBTITLE_KEY = 'ironsides.lineup.subtitle';
+const SUBTITLE_FOR_KEY = 'ironsides.lineup.subtitleFor';
+// The server-built subtitle (team, opposition, date). A manual edit is only
+// restored while this is unchanged, so a new match or team isn't hidden.
+const defaultSubtitle = subtitleInput?.value || '';
 const FEATURED_KEY = 'ironsides.lineup.featuredId';
 
 // No photo for this player → fall back to the club shirt badge image.
@@ -26,13 +30,17 @@ featuredSelect?.addEventListener('change', () => {
 subtitleInput?.addEventListener('input', () => {
   setSubtitle(subtitleInput.value);
   // Persist so the user's manual edit survives navigating between tabs
-  try { localStorage.setItem(SUBTITLE_KEY, subtitleInput.value); } catch {}
+  try {
+    localStorage.setItem(SUBTITLE_KEY, subtitleInput.value);
+    localStorage.setItem(SUBTITLE_FOR_KEY, defaultSubtitle);
+  } catch {}
 });
 
 // Restore a manually-saved subtitle/featured player if present
 try {
   const saved = localStorage.getItem(SUBTITLE_KEY);
-  if (saved !== null && saved !== '') subtitleInput.value = saved;
+  const savedFor = localStorage.getItem(SUBTITLE_FOR_KEY);
+  if (saved !== null && saved !== '' && savedFor === defaultSubtitle) subtitleInput.value = saved;
   const savedFeatured = localStorage.getItem(FEATURED_KEY);
   if (savedFeatured && featuredSelect && [...featuredSelect.options].some(o => o.value === savedFeatured)) {
     featuredSelect.value = savedFeatured;

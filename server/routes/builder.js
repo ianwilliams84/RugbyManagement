@@ -35,6 +35,7 @@ router.post('/save', async (req, res, next) => {
       venue: str(b.venue, 100),
       homeAway: b.homeAway === 'away' ? 'away' : 'home',
       team: [1, 2, 3].includes(Number(b.team)) ? Number(b.team) : 1,
+      teamName: str(b.teamName, 60),
       fixtureId: cleanId(b.fixtureId),
       format,
       benchSize,

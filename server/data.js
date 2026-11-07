@@ -41,7 +41,7 @@ export async function saveSquad(squad) {
 export function emptySelection() {
   return {
     matchTitle: '', matchDate: '', kickoff: '', opposition: '', venue: '', homeAway: 'home',
-    team: 1, fixtureId: null,
+    team: 1, teamName: '', fixtureId: null,
     format: DEFAULT_FORMAT, benchSize: getFormat(DEFAULT_FORMAT).defaultBench,
     lineup: [], bench: [],
     captainId: null, viceCaptainId: null, kickerId: null,
@@ -95,6 +95,12 @@ export async function saveSettings(settings) {
 export function teamName(settings, n) {
   const i = Number(n) - 1;
   return (settings.teams?.names?.[i] || '').trim() || `Team ${n}`;
+}
+
+// The Team Builder's free-text team name (e.g. "U14s II & IIIs"), falling
+// back to the squad's name from Settings when it's left blank.
+export function selectionTeamName(settings, selection) {
+  return String(selection.teamName || '').trim() || teamName(settings, selection.team);
 }
 
 // ── Fixtures ───────────────────────────────────────────────────────────────
