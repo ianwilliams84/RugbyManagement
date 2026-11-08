@@ -704,21 +704,23 @@ input:disabled, button:disabled { opacity: 0.5; cursor: not-allowed; }
   body.print-subplan-only .sp-help,
   body.print-subplan-only .sp-copy,
   body.print-subplan-only .sp-nochange,
-  body.print-subplan-only .sp-time,
+  body.print-subplan-only .sp-time .sp-subtitle,
   body.print-subplan-only .warn-banner { display: none !important; }
   body.print-subplan-only .subplan { border: 0; box-shadow: none; padding: 0; margin: 0; }
   body.print-subplan-only .sp-print-title { display: block; font-weight: 700; font-size: 15px; margin: 0 0 6px; color: var(--club-green-dark); }
   body.print-subplan-only .sp-scroll { overflow: visible; }
   body.print-subplan-only, body.print-subplan-only main.container { padding: 0; margin: 0; max-width: none; }
   body.print-subplan-only .sp-head h2 { display: none; }
-  body.print-subplan-only .sp-grid, body.print-subplan-only .sp-summary { font-size: 10px; line-height: 1.2; }
+  body.print-subplan-only .sp-grid, body.print-subplan-only .sp-summary { font-size: 10px; line-height: 1.15; }
   body.print-subplan-only .sp-grid td, body.print-subplan-only .sp-grid th,
-  body.print-subplan-only .sp-summary td, body.print-subplan-only .sp-summary th { padding: 1px 5px; }
+  body.print-subplan-only .sp-summary td, body.print-subplan-only .sp-summary th { padding: 0 5px; }
   body.print-subplan-only .sp-grid tr.sp-unit-break > *, body.print-subplan-only .sp-grid tr.sp-bench-break > * { border-top-width: 2px; }
   body.print-subplan-only .sp-subtitle { margin: 6px 0 3px; font-size: 12px; }
   body.print-subplan-only .sp-cell.sp-picked { outline: 0; }
   body.print-subplan-only .subplan * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  body.print-subplan-only .sp-grid { break-inside: avoid; }}
+  /* Both tables on one A4 landscape page: the grid, then playing time with no heading. */
+  body.print-subplan-only .sp-time { margin-top: 5px; }
+  body.print-subplan-only .sp-grid, body.print-subplan-only .sp-summary { break-inside: avoid; }}
 
 /* ===== First-run setup ===== */
 .setup-page { max-width: 760px; }
