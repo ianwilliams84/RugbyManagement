@@ -65,7 +65,7 @@ Setup screen with a warning rather than starting an empty squad somewhere else.
 
 Player names and photos never go in the repo. Everything is stored in the data
 folder chosen during Setup (saved as `IRONSIDES_DATA_DIR`), e.g.
-`\\IanNAS\home\IronsidesRugbyData` to share one squad between PCs. The JSON
+`\\YourNAS\share\IronsidesRugbyData` to share one squad between PCs. The JSON
 files, `photos/` and `videos/` live there. If that folder can't be reached, the
 app holds on the Setup screen, so it can't quietly create an empty squad
 somewhere else. The old in-project `data/`, `photos/` and `videos/` folders are
