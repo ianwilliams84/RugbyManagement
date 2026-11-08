@@ -1,6 +1,6 @@
-# Ironsides Rugby Management
+# Rugby Management
 
-Team-management tool for Ironsides Rugby (est. 1943). Squad and stat cards, a
+Team-management tool for Rugby. Squad and stat cards, a
 drag-and-drop matchday builder (starting XV + replacements), Sky-Sports-style
 lineup graphics, a Spond-ready team sheet with a pitch formation, results
 tracking and AI match reports.
