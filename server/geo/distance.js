@@ -96,7 +96,7 @@ export async function drivingRoute(fromPc, to) {
   // OSRM expects lon,lat (not lat,lon)
   const url = `https://router.project-osrm.org/route/v1/driving/${from.lon},${from.lat};${toResolved.lon},${toResolved.lat}?overview=false`;
   try {
-    const res = await fetch(url, { headers: { 'User-Agent': 'Ironsides-Rugby-Management/1.0' } });
+    const res = await fetch(url, { headers: { 'User-Agent': 'Rugby-Management/1.0' } });
     if (!res.ok) {
       routeMemo.set(cacheKey, null);
       return null;

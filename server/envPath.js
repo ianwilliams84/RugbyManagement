@@ -1,3 +1,4 @@
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
@@ -5,12 +6,17 @@ import dotenv from 'dotenv';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const projectRoot = path.join(__dirname, '..');
 
-// Credentials live outside the repo, in the shared dev\secrets folder, so they
-// can't be committed. IRONSIDES_ENV overrides the location if needed. On a PC
-// without that folder (someone the app was shared with), first-run setup
-// writes them to the gitignored pw.env in the project instead.
-export const secretsEnvPath = process.env.IRONSIDES_ENV
-  || path.join(projectRoot, '..', 'secrets', 'ironsides.env');
+// Credentials can live outside the app folder, in a "secrets" folder next to
+// it, so a developer's copy can't commit them. RUGBY_ENV names the file
+// directly. Without either, which is the usual case for someone the app was
+// shared with, first-run setup writes them to the gitignored pw.env in the
+// app folder instead. IRONSIDES_ENV and secrets\ironsides.env are the names
+// from before 1.0, still read so existing installs keep working.
+const secretsDir = path.join(projectRoot, '..', 'secrets');
+export const secretsEnvPath = process.env.RUGBY_ENV || process.env.IRONSIDES_ENV
+  || [path.join(secretsDir, 'rugby-management.env'), path.join(secretsDir, 'ironsides.env')]
+    .find(f => fs.existsSync(f))
+  || path.join(secretsDir, 'rugby-management.env');
 export const localEnvPath = path.join(projectRoot, 'pw.env');
 
 // Loaded here rather than in index.js because ES imports run before the
@@ -21,8 +27,14 @@ dotenv.config({ path: secretsEnvPath });
 dotenv.config({ path: localEnvPath });
 dotenv.config({ path: path.join(projectRoot, '.env') });
 
+// Before 1.0 the data folder was saved as IRONSIDES_DATA_DIR. Setup now saves
+// RUGBY_DATA_DIR, which wins once it's there.
+if (!process.env.RUGBY_DATA_DIR && process.env.IRONSIDES_DATA_DIR) {
+  process.env.RUGBY_DATA_DIR = process.env.IRONSIDES_DATA_DIR;
+}
+
 // Squad, results, settings, photos and videos hold players' names and faces,
-// so they never go in the repo. IRONSIDES_DATA_DIR points them at a folder
+// so they never go in the repo. RUGBY_DATA_DIR points them at a folder
 // chosen during setup (often a NAS share, so several PCs see the same squad).
 //
 // `paths` is one shared, mutable object: setup can point it at a new folder
@@ -38,4 +50,4 @@ export function setDataRoot(folder) {
   paths.videosDir = path.join(shared || projectRoot, 'videos');
 }
 
-setDataRoot(process.env.IRONSIDES_DATA_DIR);
+setDataRoot(process.env.RUGBY_DATA_DIR);

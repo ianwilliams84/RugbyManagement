@@ -1,27 +1,39 @@
-# Builds runme.exe (project root) from tools\runme-launcher.cs, with the club
-# crest as its icon. Uses the C# compiler that ships with .NET Framework 4.x,
+# Builds runme.exe (project root) from tools\runme-launcher.cs, with a rugby
+# ball icon drawn here. Uses the C# compiler that ships with .NET Framework 4.x,
 # so nothing extra needs installing.
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 $tools = $PSScriptRoot
 
-# 1. Multi-size .ico (PNG-compressed entries) from the square crest image.
+# 1. Multi-size .ico (PNG-compressed entries): a white rugby ball on a green disc.
 Add-Type -AssemblyName System.Drawing
-$src = [System.Drawing.Image]::FromFile((Join-Path $root 'public\img\ironsides-crest.png'))
-$sizes = 16, 24, 32, 48, 64, 128, 256
-$pngs = foreach ($s in $sizes) {
+function New-IconPng([int]$s) {
     $bmp = New-Object System.Drawing.Bitmap $s, $s
     $g = [System.Drawing.Graphics]::FromImage($bmp)
-    $g.InterpolationMode = 'HighQualityBicubic'
-    $g.DrawImage($src, 0, 0, $s, $s)
-    $g.Dispose()
+    $g.SmoothingMode = 'AntiAlias'
+    $g.Clear([System.Drawing.Color]::Transparent)
+    $green = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(0x1C, 0x77, 0x32))
+    $g.FillEllipse($green, 0, 0, $s - 1, $s - 1)
+    $g.TranslateTransform($s / 2, $s / 2)
+    $g.RotateTransform(-35)
+    $w = $s * 0.66; $h = $s * 0.40
+    $pen = New-Object System.Drawing.Pen ([System.Drawing.Color]::White), ([Math]::Max(1.5, $s * 0.07))
+    $g.DrawEllipse($pen, -$w / 2, -$h / 2, $w, $h)
+    if ($s -ge 24) {
+        $thin = New-Object System.Drawing.Pen ([System.Drawing.Color]::White), ([Math]::Max(1, $s * 0.045))
+        $g.DrawLine($thin, -$w * 0.3, 0, $w * 0.3, 0)
+        foreach ($x in -0.15, -0.05, 0.05, 0.15) { $g.DrawLine($thin, $w * $x, -$h * 0.14, $w * $x, $h * 0.14) }
+        $thin.Dispose()
+    }
+    $pen.Dispose(); $green.Dispose(); $g.Dispose()
     $ms = New-Object System.IO.MemoryStream
     $bmp.Save($ms, [System.Drawing.Imaging.ImageFormat]::Png)
     $bmp.Dispose()
     , $ms.ToArray()
 }
-$src.Dispose()
-$ico = Join-Path $tools 'ironsides.ico'
+$sizes = 16, 24, 32, 48, 64, 128, 256
+$pngs = foreach ($s in $sizes) { New-IconPng $s }
+$ico = Join-Path $tools 'app.ico'
 $fs = [System.IO.File]::Create($ico)
 $w = New-Object System.IO.BinaryWriter $fs
 $w.Write([UInt16]0); $w.Write([UInt16]1); $w.Write([UInt16]$sizes.Count)

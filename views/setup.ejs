@@ -1,7 +1,7 @@
 <%- include('partials/head', { title: 'Setup' }) %>
 <header class="topbar">
   <span class="brand">
-    <img src="/img/ironsides-logo-transparent.png" alt="Ironsides Rugby 1943">
+    <img src="/brand/logo" alt="Rugby Management">
     <span>Team Management</span>
   </span>
   <% if (status.complete) { %><nav><a href="/squad">Back to the app</a></nav><% } %>
@@ -52,7 +52,7 @@
           <span class="field-msg" data-for="ageGroup"></span>
         </label>
         <label>Team name
-          <input name="teamName" value="<%= status.team.teamName %>" placeholder="e.g. Ironsides Lions" maxlength="60">
+          <input name="teamName" value="<%= status.team.teamName %>" placeholder="e.g. Riverside Lions" maxlength="60">
           <span class="field-msg" data-for="teamName"></span>
         </label>
       </div>

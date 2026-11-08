@@ -3,7 +3,7 @@ setlocal
 cd /d "%~dp0"
 
 echo ==========================================
-echo  Ironsides Rugby - Team Management
+echo  Rugby Management
 echo ==========================================
 echo.
 

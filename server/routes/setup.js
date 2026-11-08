@@ -42,7 +42,7 @@ router.post('/save', async (req, res, next) => {
 
     // 1. Data folder first: the team details are saved inside it.
     const folder = clean(b.dataFolder, 400);
-    const current = (process.env.IRONSIDES_DATA_DIR || '').trim();
+    const current = (process.env.RUGBY_DATA_DIR || '').trim();
     if (folder && (folder !== current || !(await setupStatus({ fresh: true })).dataFolder.done)) {
       const check = await checkDataFolder(folder, { create: true });
       if (check.ok) {
@@ -114,7 +114,7 @@ router.post('/browse', (req, res) => {
     'Add-Type -AssemblyName System.Windows.Forms',
     '$owner = New-Object System.Windows.Forms.Form -Property @{ TopMost = $true; ShowInTaskbar = $false }',
     '$d = New-Object System.Windows.Forms.FolderBrowserDialog',
-    "$d.Description = 'Choose where Ironsides Rugby saves the squad, results and photos'",
+    "$d.Description = 'Choose where Rugby Management saves the squad, results and photos'",
     '$d.ShowNewFolderButton = $true',
     'if ($d.ShowDialog($owner) -eq [System.Windows.Forms.DialogResult]::OK) { $d.SelectedPath }',
   ].join('; ');

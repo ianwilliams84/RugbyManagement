@@ -4,9 +4,9 @@
 //   Per PC, in an env file (never in git):  Spond login, data folder, Claude choice
 //   Shared, in settings.json in the data folder:  age group, team name
 //
-// The env file is the shared dev\secrets\ironsides.env when that exists (or
-// IRONSIDES_ENV names one), otherwise the project's gitignored pw.env. That
-// way a PC someone was given the app on needs no folder outside the project.
+// The env file is the secrets file next to the app folder when that exists
+// (or RUGBY_ENV names one; see envPath.js), otherwise the app's gitignored
+// pw.env. That way a PC someone was given the app on needs no folder outside it.
 import fs from 'fs';
 import fsp from 'fs/promises';
 import path from 'path';
@@ -14,7 +14,7 @@ import os from 'os';
 import { paths, secretsEnvPath, localEnvPath, setDataRoot } from './envPath.js';
 
 export function envFilePath() {
-  if (process.env.IRONSIDES_ENV || fs.existsSync(secretsEnvPath)) return secretsEnvPath;
+  if (process.env.RUGBY_ENV || process.env.IRONSIDES_ENV || fs.existsSync(secretsEnvPath)) return secretsEnvPath;
   return localEnvPath;
 }
 
@@ -54,7 +54,7 @@ export async function saveEnv(values) {
 }
 
 export function suggestedDataFolder() {
-  return path.join(os.homedir(), 'Documents', 'Ironsides Rugby Data');
+  return path.join(os.homedir(), 'Documents', 'Rugby Management Data');
 }
 
 // Check a folder can hold the squad: create it (and photos/videos) if needed,
@@ -63,7 +63,7 @@ export function suggestedDataFolder() {
 export async function checkDataFolder(folder, { create = false } = {}) {
   const dir = String(folder || '').trim();
   if (!dir) return { ok: false, error: 'Choose a folder.' };
-  if (!path.isAbsolute(dir)) return { ok: false, error: 'Use a full path, e.g. C:\\Users\\you\\Documents\\Ironsides Rugby Data or \\\\NAS\\share\\folder.' };
+  if (!path.isAbsolute(dir)) return { ok: false, error: 'Use a full path, e.g. C:\\Users\\you\\Documents\\Rugby Management Data or \\\\NAS\\share\\folder.' };
   try {
     if (create) {
       await fsp.mkdir(path.join(dir, 'photos'), { recursive: true });
@@ -89,7 +89,7 @@ export async function checkDataFolder(folder, { create = false } = {}) {
 
 export async function useDataFolder(folder) {
   const dir = String(folder).trim();
-  await saveEnv({ IRONSIDES_DATA_DIR: dir });
+  await saveEnv({ RUGBY_DATA_DIR: dir });
   setDataRoot(dir);
   invalidateSetupStatus();
 }
@@ -115,7 +115,7 @@ async function readClub() {
 
 export async function setupStatus({ fresh = false } = {}) {
   if (!fresh && cached && Date.now() - cached.at < TTL_MS) return cached.status;
-  const folder = (process.env.IRONSIDES_DATA_DIR || '').trim();
+  const folder = (process.env.RUGBY_DATA_DIR || '').trim();
   const reachable = folder ? await folderReachable(folder) : false;
   const club = reachable ? await readClub() : {};
   const claudeMode = (process.env.CLAUDE_MODE || '').trim();

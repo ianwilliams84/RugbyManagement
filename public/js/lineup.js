@@ -16,7 +16,7 @@ function setFeatured(id) {
   const photo = data.photoMap[id];
   featuredImgWrap.innerHTML = photo
     ? `<img src="${photo}" alt="" id="lg-featured-img">`
-    : `<img src="/img/ironsides-shirt-badge.png" alt="" id="lg-featured-img" class="lg-default">`;
+    : `<img src="/brand/badge" alt="" id="lg-featured-img" class="lg-default">`;
 }
 
 function setSubtitle(text) {
@@ -63,7 +63,7 @@ document.getElementById('download-btn').addEventListener('click', async () => {
     const png = await htmlToImage.toPng(target, { pixelRatio: 2, backgroundColor: '#ffffff' });
     const link = document.createElement('a');
     const stamp = new Date().toISOString().slice(0, 10);
-    link.download = `ironsides-lineup-${stamp}.png`;
+    link.download = `rugby-lineup-${stamp}.png`;
     link.href = png;
     link.click();
   } catch (err) {

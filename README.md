@@ -5,8 +5,6 @@ drag-and-drop matchday builder (starting XV + replacements), Sky-Sports-style
 lineup graphics, a Spond-ready team sheet with a pitch formation, results
 tracking and AI match reports.
 
-A rugby sibling of the BICC Team Management site.
-
 ## Requirements
 
 - **Windows**, for `runme.exe` and the folder picker. The site itself runs
@@ -40,8 +38,9 @@ Open http://localhost:3001. **On first run every page opens the Setup screen**
    Anthropic API key, or off.
 
 Setup saves the per-PC answers (Spond login, data folder, Claude choice, API
-key) to `..\secrets\ironsides.env` when that file exists (or wherever
-`IRONSIDES_ENV` points), otherwise to the gitignored `pw.env` in this folder.
+key) to the gitignored `pw.env` in this folder. To keep them outside the app
+folder instead, put them in `..\secrets\rugby-management.env`, or point
+`RUGBY_ENV` at a file; setup then saves there.
 The age group and team name go in `settings.json` in the data folder, so every
 PC sharing it sees the same team. Settings ▸ **Run setup again** changes any
 of it later. `PORT` (default 3001) can be set in the same env file.
@@ -73,8 +72,8 @@ Setup screen with a warning rather than starting an empty squad somewhere else.
 ## Data
 
 Player names and photos never go in the repo. Everything is stored in the data
-folder chosen during Setup (saved as `IRONSIDES_DATA_DIR`), e.g.
-`\\YourNAS\share\IronsidesRugbyData` to share one squad between PCs. The JSON
+folder chosen during Setup (saved as `RUGBY_DATA_DIR`), e.g.
+`\\YourNAS\share\RugbyData` to share one squad between PCs. The JSON
 files, `photos/` and `videos/` live there. If that folder can't be reached, the
 app holds on the Setup screen, so it can't quietly create an empty squad
 somewhere else. The old in-project `data/`, `photos/` and `videos/` folders are
@@ -90,12 +89,24 @@ The JSON files:
 
 Player photos go in `photos/<player id>.jpg` (ids are shown in Settings → Players).
 
+### Your club's badge
+
+The app comes with a plain rugby-ball logo. To use your own, make a `branding`
+folder inside the data folder and add any of these PNGs. They show straight
+away, on every PC that shares the folder:
+
+- `logo.png`: the wordmark in the top bar and on the lineup photo. It sits on
+  the club colour, so a transparent background works best.
+- `crest.png`: a square badge for the team sheet and the browser tab.
+- `badge.png`: the picture on the lineup photo when the featured player has
+  no photo.
+
 ## Tech
 
 - Node 20+, Express + EJS, vanilla JS
 - `public/js/rugby.js`: shared formats, positions, points values and season
   helpers, used by both the server and the browser
-- `html2canvas` (CDN) for PNG export
+- `html2canvas` and `html-to-image` (CDN) for PNG export
 - Match reports are off until chosen in Setup: the local Claude Code CLI
   (`claude -p`, no key needed) or an Anthropic API key
 - Driving distances: postcodes.io + the OSRM public router

@@ -66,7 +66,7 @@ export async function saveSelection(selection) {
 export async function loadSettings() {
   const s = await readJson('settings.json', {});
   s.club = {
-    name: 'Ironsides Rugby', shortName: 'Ironsides', founded: '1943',
+    name: 'Rugby Club', shortName: '', founded: '',
     primaryColor: '#1C7732', primaryDark: '#0E3F1A',
     ageGroup: '', teamName: '',
     ...(s.club || {}),

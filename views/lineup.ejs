@@ -3,7 +3,7 @@
 <main class="container">
   <div class="page-head">
     <h1>Lineup Photo</h1>
-    <p class="muted">Sky-Sports-style team graphic. Pick a featured player; their photo bleeds into the right side. Drop player photos in <code>photos/</code> as <code>&lt;player id&gt;.jpg</code> (ids are listed in Settings → Players). Without a photo the club shirt is used.</p>
+    <p class="muted">Sky-Sports-style team graphic. Pick a featured player; their photo bleeds into the right side. Drop player photos in <code>photos/</code> as <code>&lt;player id&gt;.jpg</code> (ids are listed in Settings → Players). Without a photo the club picture is used (<code>branding/badge.png</code> in the data folder, if you've added one).</p>
   </div>
 
   <%
@@ -34,9 +34,9 @@
     <div id="lineup-graphic" class="lineup-graphic">
       <div class="lg-left" style="background: <%= settings.club.primaryColor %>">
         <div class="lg-header">
-          <img src="/img/ironsides-logo-transparent.png" alt="">
+          <img src="/brand/logo" alt="">
           <div>
-            <h1><%= (settings.club.shortName || 'Ironsides').toUpperCase() %></h1>
+            <h1><%= (settings.club.shortName || settings.club.teamName || settings.club.name || 'Rugby').toUpperCase() %></h1>
             <p id="lg-subtitle" class="lg-subtitle"></p>
           </div>
         </div>
@@ -59,7 +59,7 @@
         <% if (featuredPhoto) { %>
           <img src="<%= featuredPhoto %>" alt="" id="lg-featured-img">
         <% } else { %>
-          <img src="/img/ironsides-shirt-badge.png" alt="" id="lg-featured-img" class="lg-default">
+          <img src="/brand/badge" alt="" id="lg-featured-img" class="lg-default">
         <% } %>
       </div>
     </div>

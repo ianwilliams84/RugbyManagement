@@ -23,7 +23,7 @@ async function downloadPng(btn, target, name) {
     const canvas = await html2canvas(target, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
     const link = document.createElement('a');
     const stamp = new Date().toISOString().slice(0, 10);
-    link.download = `ironsides-${name}-${stamp}.png`;
+    link.download = `rugby-${name}-${stamp}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
   } catch (err) {

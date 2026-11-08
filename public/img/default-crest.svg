@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!-- Generic crest for the team sheet and browser tab. A club's own crest.png
+       in <data folder>\branding replaces it. -->
+  <path d="M128 12 L228 44 V124 C228 184 184 224 128 244 C72 224 28 184 28 124 V44 Z" fill="#1C7732" stroke="#0E3F1A" stroke-width="8" stroke-linejoin="round"/>
+  <g transform="translate(128 132) rotate(-35)" fill="none" stroke="#fff" stroke-linecap="round">
+    <ellipse rx="70" ry="42" stroke-width="10"/>
+    <path d="M-46 0 H46" stroke-width="7"/>
+    <path d="M-24 -11v22M-8 -11v22M8 -11v22M24 -11v22" stroke-width="6"/>
+  </g>
+</svg>

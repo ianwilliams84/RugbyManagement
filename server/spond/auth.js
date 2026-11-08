@@ -1,6 +1,6 @@
 const BASE = 'https://api.spond.com/core/v1';
 const STALE_MS = 12 * 60 * 60 * 1000;
-const UA = 'Ironsides-TeamManager/0.1 (+personal-club-tool)';
+const UA = 'Rugby-Management/1.0 (+personal-club-tool)';
 
 let cache = { token: null, userId: null, fetchedAt: 0 };
 

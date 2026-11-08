@@ -1,6 +1,6 @@
 /* Rugby-specific styles layered on top of main.css (the shared site styles). */
 
-/* Top bar: the transparent Ironsides wordmark sits straight on the club green */
+/* Top bar: the transparent club wordmark sits straight on the club green */
 .topbar .brand img { width: auto; height: 46px; background: none; padding: 0; border-radius: 0; }
 .topbar .brand span { font-weight: 600; opacity: 0.9; border-left: 1px solid rgba(255,255,255,0.35); padding-left: 12px; }
 .topbar nav { flex-wrap: wrap; justify-content: flex-end; }

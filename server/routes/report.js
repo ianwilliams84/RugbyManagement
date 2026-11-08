@@ -78,7 +78,7 @@ router.post('/generate', async (req, res) => {
       summary,
       tone: settings.matchReport?.tone,
       lengthWords: settings.matchReport?.lengthWords,
-      clubName: settings.club?.name || 'Ironsides Rugby',
+      clubName: settings.club?.name || 'the club',
       ageGroup: settings.club?.ageGroup,
       teamName: settings.club?.teamName,
     });

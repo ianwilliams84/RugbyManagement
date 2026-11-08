@@ -1,5 +1,4 @@
-// Ironsides Rugby Management launcher, compiled to runme.exe by
-// tools\build-runme.ps1. Modelled on the Trading Manager Platform's runme.exe.
+// Rugby Management launcher, compiled to runme.exe by tools\build-runme.ps1.
 //
 // Starts the site's Node server in the background, opens the browser, then
 // stays at a prompt so you can reopen the browser, restart the server to pick
@@ -18,13 +17,15 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-[assembly: AssemblyTitle("Ironsides Rugby - Team Management")]
-[assembly: AssemblyProduct("Ironsides Rugby Management")]
-[assembly: AssemblyDescription("Starts the Ironsides Rugby Management site")]
+[assembly: AssemblyTitle("Rugby Management")]
+[assembly: AssemblyProduct("Rugby Management")]
+[assembly: AssemblyDescription("Starts the Rugby Management site")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]
 
 class Launcher
 {
-    const string Title = "Ironsides Rugby - Team Management";
+    const string Title = "Rugby Management";
     const string DefaultPort = "3001";
     const string ServerScript = "server/index.js";
 
@@ -329,26 +330,42 @@ class Launcher
 
     // ---- Plumbing ---------------------------------------------------------
 
-    /// The server takes PORT from the secrets file (dev\secrets\ironsides.env,
-    /// or IRONSIDES_ENV), so read the same place to know where to point the
-    /// browser. Falls back to 3001, the server's own default.
+    /// The server reads PORT from the same env files, in the same order, as
+    /// server/envPath.js: RUGBY_ENV (or the pre-1.0 IRONSIDES_ENV), a secrets
+    /// file next to the app folder, then pw.env and .env in the app folder.
+    /// The first one that sets PORT wins. Falls back to 3001, the server's own
+    /// default.
     static string ReadPort()
     {
-        string envFile = Environment.GetEnvironmentVariable("IRONSIDES_ENV");
-        if (string.IsNullOrEmpty(envFile))
-            envFile = Path.Combine(Path.GetDirectoryName(RootDir), "secrets", "ironsides.env");
-        try
+        string secrets = Path.Combine(Path.GetDirectoryName(RootDir), "secrets");
+        var files = new List<string>();
+        string named = Environment.GetEnvironmentVariable("RUGBY_ENV");
+        if (string.IsNullOrEmpty(named)) named = Environment.GetEnvironmentVariable("IRONSIDES_ENV");
+        if (!string.IsNullOrEmpty(named)) files.Add(named);
+        else
         {
-            foreach (string raw in File.ReadAllLines(envFile))
-            {
-                string line = raw.Trim();
-                if (!line.StartsWith("PORT=")) continue;
-                string v = line.Substring(5).Trim().Trim('"', '\'');
-                int n;
-                if (int.TryParse(v, out n) && n > 0 && n < 65536) return v;
-            }
+            files.Add(Path.Combine(secrets, "rugby-management.env"));
+            files.Add(Path.Combine(secrets, "ironsides.env"));
         }
-        catch { }
+        files.Add(Path.Combine(RootDir, "pw.env"));
+        files.Add(Path.Combine(RootDir, ".env"));
+
+        foreach (string envFile in files)
+        {
+            try
+            {
+                if (!File.Exists(envFile)) continue;
+                foreach (string raw in File.ReadAllLines(envFile))
+                {
+                    string line = raw.Trim();
+                    if (!line.StartsWith("PORT=")) continue;
+                    string v = line.Substring(5).Trim().Trim('"', '\'');
+                    int n;
+                    if (int.TryParse(v, out n) && n > 0 && n < 65536) return v;
+                }
+            }
+            catch { }
+        }
         return DefaultPort;
     }
 

@@ -25,10 +25,13 @@
       <label>Short name <input name="clubShortName" value="<%= settings.club.shortName %>"></label>
       <label>Founded <input name="clubFounded" value="<%= settings.club.founded || '' %>"></label>
       <label>Age group <input name="ageGroup" value="<%= settings.club.ageGroup || '' %>" placeholder="e.g. U14" maxlength="40"></label>
-      <label>Team name <input name="teamName" value="<%= settings.club.teamName || '' %>" placeholder="e.g. Ironsides Lions" maxlength="60"></label>
+      <label>Team name <input name="teamName" value="<%= settings.club.teamName || '' %>" placeholder="e.g. Riverside Lions" maxlength="60"></label>
       <label>Primary colour <input name="primaryColor" type="color" value="<%= settings.club.primaryColor %>"></label>
       <label>Primary colour (dark) <input name="primaryDark" type="color" value="<%= settings.club.primaryDark %>"></label>
     </div>
+    <p class="muted small">To use your club's badge, add <code>logo.png</code> (top bar and lineup photo), <code>crest.png</code>
+      (team sheet and browser tab) and/or <code>badge.png</code> (lineup photo picture) to a <code>branding</code> folder
+      inside the data folder<% if (locals.env && env.dataFolder) { %> (<code><%= env.dataFolder %></code>)<% } %>.</p>
 
     <h2>Teams &amp; season</h2>
     <div class="match-fields">

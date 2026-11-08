@@ -1,7 +1,7 @@
 {
-  "name": "ironsides-rugby-management",
+  "name": "rugby-management",
   "version": "1.0.0",
-  "description": "Squad, team selection and match-day tools for Ironsides Rugby",
+  "description": "Squad, team selection and match-day tools for rugby clubs",
   "type": "module",
   "main": "server/index.js",
   "scripts": {

@@ -1,5 +1,6 @@
 import { projectRoot, paths } from './envPath.js';   // first: loads the env file
 import express from 'express';
+import fs from 'fs';
 import path from 'path';
 
 import squadRouter from './routes/squad.js';
@@ -26,6 +27,20 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(projectRoot, 'views'));
 app.use(express.static(path.join(projectRoot, 'public')));
+
+// Club branding. The app ships generic images. A club replaces them by putting
+// logo.png (the wordmark, on the club colour), crest.png (square, on white)
+// and/or badge.png (the lineup photo's default picture) in a "branding" folder
+// inside its data folder. Read on each request so a new image shows at once.
+const BRAND_DEFAULTS = { logo: 'default-logo.svg', crest: 'default-crest.svg', badge: 'default-badge.svg' };
+app.get('/brand/:name', (req, res) => {
+  const name = String(req.params.name).replace(/\.(png|svg)$/i, '');
+  if (!BRAND_DEFAULTS[name]) return res.sendStatus(404);
+  const own = path.join(paths.dataRoot || projectRoot, 'branding', `${name}.png`);
+  res.set('Cache-Control', 'no-cache');
+  fs.stat(own, (err, st) => res.sendFile(!err && st.isFile()
+    ? own : path.join(projectRoot, 'public', 'img', BRAND_DEFAULTS[name])));
+});
 
 // Photos live in the data folder, which setup can change while the server is
 // running, so pick the static handler for the current folder on each request.
@@ -78,5 +93,5 @@ app.use((err, req, res, next) => {
 
 const port = process.env.PORT || 3001;
 app.listen(port, () => {
-  console.log(`Ironsides Rugby Management — http://localhost:${port}`);
+  console.log(`Rugby Management — http://localhost:${port}`);
 });

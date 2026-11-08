@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="1350" viewBox="0 0 600 1350">
+  <!-- Generic picture for the lineup photo when the featured player has no
+       photo. Transparent, so the club's dark colour shows through. A club's own
+       badge.png in <data folder>\branding replaces it. -->
+  <g fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="18" stroke-linecap="round">
+    <path d="M150 140 V1350 M450 140 V1350 M150 760 H450"/>
+  </g>
+  <g transform="translate(300 520) rotate(-35)" fill="none" stroke="#fff" stroke-opacity=".85" stroke-linecap="round">
+    <ellipse rx="150" ry="90" stroke-width="16"/>
+    <path d="M-100 0 H100" stroke-width="12"/>
+    <path d="M-50 -24v48M-17 -24v48M17 -24v48M50 -24v48" stroke-width="10"/>
+  </g>
+</svg>

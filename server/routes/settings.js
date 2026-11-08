@@ -1,5 +1,5 @@
 import express from 'express';
-import { loadSettings, saveSettings } from '../data.js';
+import { loadSettings, saveSettings, paths } from '../data.js';
 import { reportEngine } from '../claude/reportGenerator.js';
 import { envFilePath } from '../config.js';
 import { configuredEmail } from '../spond/auth.js';
@@ -15,6 +15,7 @@ router.get('/', async (req, res, next) => {
       envFile: envFilePath(),
       spond: !!(process.env.SPOND_EMAIL && process.env.SPOND_PASSWORD),
       spondEmail: configuredEmail(),
+      dataFolder: paths.dataRoot,
     };
     res.render('settings', { settings, env, positionTags: POSITION_TAGS });
   } catch (e) { next(e); }
