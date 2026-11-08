@@ -2,6 +2,7 @@ import express from 'express';
 import { loadSquad, loadSelection, saveSelection, loadSettings, loadMatches } from '../data.js';
 import { computeStats } from '../stats.js';
 import { FORMATS, getFormat, normaliseFormat } from '../../public/js/rugby.js';
+import { SUB_MODES, normaliseSubPlan } from '../../public/js/subPlan.js';
 
 const router = express.Router();
 
@@ -15,6 +16,17 @@ router.get('/', async (req, res, next) => {
 
 const cleanId = (x) => (typeof x === 'string' && x) ? x.slice(0, 64) : null;
 const str = (v, n) => String(v ?? '').slice(0, n);
+
+// Later periods of the substitution plan: one id per starting slot + sub row,
+// or null for a period with no changes of its own.
+function cleanSubPlan(raw, rows) {
+  const plan = normaliseSubPlan(raw);
+  for (const [mode, m] of Object.entries(SUB_MODES)) {
+    plan.plans[mode] = plan.plans[mode].slice(0, m.periods - 1)
+      .map(col => (Array.isArray(col) ? col.slice(0, rows).map(cleanId) : null));
+  }
+  return plan;
+}
 
 router.post('/save', async (req, res, next) => {
   try {
@@ -44,6 +56,7 @@ router.post('/save', async (req, res, next) => {
       captainId: cleanId(b.captainId),
       viceCaptainId: cleanId(b.viceCaptainId),
       kickerId: cleanId(b.kickerId),
+      subPlan: cleanSubPlan(b.subPlan, lineup.length + bench.length),
     });
     res.json({ ok: true });
   } catch (e) { next(e); }

@@ -1,4 +1,5 @@
 import { FORMATS, getFormat, tagsForSlot } from './rugby.js';
+import { createSubPlan, normaliseSubPlan } from './subPlan.js';
 
 const data = JSON.parse(document.getElementById('initial-data').textContent);
 const squadById = Object.fromEntries(data.squad.players.map(p => [p.id, p]));
@@ -21,6 +22,7 @@ const state = {
   viceCaptainId: data.selection.viceCaptainId || null,
   kickerId: data.selection.kickerId || null,
   fixtureId: data.selection.fixtureId || null,
+  subPlan: normaliseSubPlan(data.selection.subPlan),
 };
 state.lineup = sized(data.selection.lineup, fmt().slots.length);
 state.bench = sized(data.selection.bench, state.benchSize);
@@ -92,6 +94,7 @@ function render() {
   renderUnitSummary();
   renderPool();
   refreshRoleOptions();
+  subPlan.render();
   if (autosaveReady) scheduleSave();
 }
 
@@ -152,6 +155,7 @@ function payload() {
     captainId: state.captainId,
     viceCaptainId: state.viceCaptainId,
     kickerId: state.kickerId,
+    subPlan: state.subPlan,
   };
 }
 
@@ -597,7 +601,16 @@ async function loadSpondEvents() {
   }
 }
 
+// Keep the "Open in Spond" link (new tab) pointing at the selected event.
+function updateSpondLink(eventId) {
+  const a = document.getElementById('spond-open-link');
+  if (!a) return;
+  a.href = eventId ? `https://spond.com/client/sponds/${encodeURIComponent(eventId)}/` : 'https://spond.com/client/';
+  a.textContent = eventId ? 'Open this event in Spond ↗' : 'Open Spond ↗';
+}
+
 document.getElementById('spond-event-select')?.addEventListener('change', (e) => {
+  updateSpondLink(e.target.value);
   if (e.target.value) importSpondEvent(e.target.value);
 });
 
@@ -650,6 +663,8 @@ document.getElementById('multi-select-clear')?.addEventListener('click', () => {
   poolSelection.clear();
   renderPool();
 });
+
+const subPlan = createSubPlan({ state, fmt, squadById, onChange: render, escapeHtml });
 
 renderBenchSizeOptions();
 render();
