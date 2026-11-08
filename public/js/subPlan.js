@@ -298,8 +298,15 @@ export function createSubPlan({ state, fmt, squadById, onChange, escapeHtml }) {
     const date = val('m-date') ? new Date(val('m-date') + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) : '';
     const opp = val('m-opposition') ? (val('m-homeaway') === 'away' ? '@ ' : 'vs ') + val('m-opposition') : '';
     root.querySelector('.sp-print-title').textContent = ['Substitution plan', opp, date, val('m-kickoff')].filter(Boolean).join(' · ');
+    // Keep it to one A4 landscape sheet. A printed row is about 14.5px and the
+    // sheet holds about 733px inside the margins, so a bigger squad (or more
+    // periods) is scaled down to fit instead of spilling onto a second page.
+    const rows = root.querySelectorAll('.sp-grid tr, .sp-summary tr').length;
+    const estimate = 60 + rows * 14.5;
+    const zoom = Math.min(1, 700 / estimate);
     const style = document.createElement('style');
-    style.textContent = '@page { size: A4 landscape; margin: 8mm; }';
+    style.textContent = '@page { size: A4 landscape; margin: 8mm; }'
+      + (zoom < 1 ? ` body.print-subplan-only .subplan { zoom: ${zoom.toFixed(3)}; }` : '');
     document.head.appendChild(style);
     document.body.classList.add('print-subplan-only');
     const cleanup = () => {

@@ -719,7 +719,7 @@ input:disabled, button:disabled { opacity: 0.5; cursor: not-allowed; }
   body.print-subplan-only .sp-cell.sp-picked { outline: 0; }
   body.print-subplan-only .subplan * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   /* Both tables on one A4 landscape page: the grid, then playing time with no heading. */
-  body.print-subplan-only .sp-time { margin-top: 5px; }
+  body.print-subplan-only .sp-time { margin-top: 16px; }
   body.print-subplan-only .sp-grid, body.print-subplan-only .sp-summary { break-inside: avoid; }}
 
 /* ===== First-run setup ===== */
