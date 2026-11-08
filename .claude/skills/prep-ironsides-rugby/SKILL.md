@@ -21,7 +21,7 @@ next.
 
 | Thing | Where |
 | --- | --- |
-| Repo | `%USERPROFILE%\dev\IronsidesRugbyManagement` → `github.com/ianwilliams84/IronsidesRugbyManagement` (private) |
+| Repo | `%USERPROFILE%\dev\IronsidesRugbyManagement` → `github.com/ianwilliams84/RugbyManagement` (**public** since 2026-11-08; renamed from IronsidesRugbyManagement) |
 | Skills repo | `%USERPROFILE%\dev\AI_Skills` → `github.com/helpskile/AI_Skills` |
 | Secrets | `%USERPROFILE%\dev\secrets\ironsides.env` (`SPOND_EMAIL`, `SPOND_PASSWORD`, `PORT`, `IRONSIDES_DATA_DIR`) |
 | Squad data | `\\IanNAS\home\IronsidesRugbyData` (squad, matches, selection, fixtures, photos, videos) |
@@ -60,9 +60,9 @@ does", but say you're doing it, and never edit it from an Ironsides session.
 
 **The user's rule: this repo is committed and pushed as `ianwilliams84`, never
 `helpskile`.** This PC's `gh` is logged into both accounts, and other sessions
-flip the *active* one mid-task. A private repo answers the wrong account with
-"Repository not found", which looks like the repo has gone. So the repo pins its
-own credential in `.git/config`. Check the pin is still there:
+flip the *active* one mid-task. The repo is public, so the wrong account can
+still pull, but a push as helpskile is refused. So the repo pins its own credential in `.git/config`. Check the pin is
+still there:
 
 ```bash
 cd "$HOME/dev/IronsidesRugbyManagement"
@@ -90,10 +90,12 @@ them the token per command:
 
 ```bash
 GH="/c/Program Files/GitHub CLI/gh.exe"
-GH_TOKEN="$("$GH" auth token --user ianwilliams84)" "$GH" repo view ianwilliams84/IronsidesRugbyManagement --json nameWithOwner,visibility -q '.nameWithOwner + " " + .visibility'
+GH_TOKEN="$("$GH" auth token --user ianwilliams84)" "$GH" repo view ianwilliams84/RugbyManagement --json nameWithOwner,visibility -q '.nameWithOwner + " " + .visibility'
 ```
 
-Expect `ianwilliams84/IronsidesRugbyManagement PRIVATE`. If `auth token --user
+Expect `ianwilliams84/RugbyManagement PUBLIC`. **Because it's public, anything
+committed is visible to everyone**, which makes the Stage 2 privacy check matter
+even more. If `auth token --user
 ianwilliams84` fails, the ianwilliams84 login has fallen out of the gh keyring:
 stop and ask the user to run `gh auth login` for it. Don't work around it with
 the helpskile account.
