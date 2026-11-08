@@ -107,9 +107,6 @@ select { font: inherit; }
 .lineup-graphic .lg-num { display: inline-block; min-width: 36px; font-weight: 800; color: rgba(255,255,255,0.55); font-size: 0.8em; text-align: right; }
 .lineup-graphic .lg-list .role-badge { align-self: center; }
 .lineup-graphic .lg-bench-title { margin: 22px 0 6px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(255,255,255,0.7); border-top: 2px solid rgba(255,255,255,0.25); padding-top: 14px; }
-.lineup-graphic .lg-bench { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 16px; }
-.lineup-graphic .lg-bench li { font-size: 19px; color: #fff; display: flex; gap: 8px; align-items: baseline; }
-.lineup-graphic .lg-bench .lg-num { min-width: 28px; }
 .lineup-graphic .lg-right { background: var(--club-green-dark); }
 .lineup-graphic .lg-right img.lg-default { object-position: 30% center; }
 

@@ -47,10 +47,10 @@
           <% }); %>
         </ol>
         <% if (bench.length) { %>
-          <p class="lg-bench-title">Replacements</p>
-          <ol class="lg-bench">
+          <p class="lg-bench-title">Finishers</p>
+          <ol class="lg-list lg-rugby">
             <% bench.forEach(({ num, id }) => { const n = splitName(byId[id].name); %>
-              <li><span class="lg-num"><%= num %></span><%= n.first ? n.first[0] + '. ' : '' %><strong><%= n.last %></strong></li>
+              <li><span class="lg-num"><%= num %></span><span class="first"><%= n.first %></span> <strong class="last"><%= n.last %></strong><% if (selection.captainId === id) { %> <%- include('partials/role-badge', { label: 'C', variant: 'light' }) %><% } %><% if (selection.viceCaptainId === id) { %> <%- include('partials/role-badge', { label: 'VC', variant: 'light' }) %><% } %></li>
             <% }); %>
           </ol>
         <% } %>
@@ -66,7 +66,7 @@
   </div>
 
   <script id="initial-data" type="application/json"><%- JSON.stringify({ photoMap }) %></script>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
   <script src="/js/lineup.js"></script>
 </main>
 <%- include('partials/foot') %>

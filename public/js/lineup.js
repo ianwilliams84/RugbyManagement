@@ -53,16 +53,18 @@ if (featuredSelect && featuredSelect.value) setFeatured(featuredSelect.value);
 document.getElementById('download-btn').addEventListener('click', async () => {
   const btn = document.getElementById('download-btn');
   const target = document.getElementById('lineup-graphic');
-  if (!target || !window.html2canvas) return;
+  if (!target || !window.htmlToImage) return;
   const original = btn.textContent;
   btn.textContent = 'Rendering…';
   btn.disabled = true;
   try {
-    const canvas = await html2canvas(target, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
+    // html-to-image draws through the browser's own layout, so mixed font
+    // weights keep their baseline (html2canvas set bold surnames too high).
+    const png = await htmlToImage.toPng(target, { pixelRatio: 2, backgroundColor: '#ffffff' });
     const link = document.createElement('a');
     const stamp = new Date().toISOString().slice(0, 10);
     link.download = `ironsides-lineup-${stamp}.png`;
-    link.href = canvas.toDataURL('image/png');
+    link.href = png;
     link.click();
   } catch (err) {
     alert('PNG render failed: ' + err.message);
