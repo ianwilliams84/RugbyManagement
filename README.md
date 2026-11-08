@@ -7,6 +7,15 @@ tracking and AI match reports.
 
 A rugby sibling of the BICC Team Management site.
 
+## Requirements
+
+- **Windows**, for `runme.exe` and the folder picker. The site itself runs
+  anywhere Node does.
+- **Node.js 20 or newer**, from https://nodejs.org (the LTS installer is
+  fine). The Windows download on the Releases page already includes Node in
+  its `node` folder, so it runs without installing it. Running from the
+  source code needs Node installed on the machine.
+
 ## Setup
 
 ```
