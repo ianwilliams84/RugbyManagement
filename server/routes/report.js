@@ -2,20 +2,20 @@ import express from 'express';
 import { loadSettings, loadMatches, loadSquad, teamName } from '../data.js';
 import { playerPoints } from '../stats.js';
 import { getFormat, resultLetter } from '../../public/js/rugby.js';
-import { generateMatchReport, detectClaudeCli } from '../claude/reportGenerator.js';
+import { generateMatchReport, reportEngine } from '../claude/reportGenerator.js';
 
 const router = express.Router();
 
 router.get('/', async (req, res, next) => {
   try {
-    const [settings, { matches }, cliReady] = await Promise.all([loadSettings(), loadMatches(), detectClaudeCli()]);
+    const [settings, { matches }, engine] = await Promise.all([loadSettings(), loadMatches(), reportEngine()]);
     const list = matches.map(m => ({
       id: m.id, date: m.date, opposition: m.opposition, homeAway: m.homeAway,
       teamName: teamName(settings, m.team),
       scoreFor: m.scoreFor, scoreAgainst: m.scoreAgainst,
       letter: resultLetter(m.scoreFor, m.scoreAgainst),
     }));
-    res.render('report', { settings, cliReady, matches: list, openId: req.query.id || '' });
+    res.render('report', { settings, engine, cliReady: engine.ready, matches: list, openId: req.query.id || '' });
   } catch (e) { next(e); }
 });
 
@@ -79,6 +79,8 @@ router.post('/generate', async (req, res) => {
       tone: settings.matchReport?.tone,
       lengthWords: settings.matchReport?.lengthWords,
       clubName: settings.club?.name || 'Ironsides Rugby',
+      ageGroup: settings.club?.ageGroup,
+      teamName: settings.club?.teamName,
     });
     res.json({ ok: true, report });
   } catch (e) {

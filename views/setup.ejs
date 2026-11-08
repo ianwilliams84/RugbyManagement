@@ -1,0 +1,197 @@
+<%- include('partials/head', { title: 'Setup' }) %>
+<header class="topbar">
+  <span class="brand">
+    <img src="/img/ironsides-logo-transparent.png" alt="Ironsides Rugby 1943">
+    <span>Team Management</span>
+  </span>
+  <% if (status.complete) { %><nav><a href="/squad">Back to the app</a></nav><% } %>
+</header>
+<main class="container setup-page">
+  <div class="page-head">
+    <h1><%= status.complete ? 'Setup' : 'Welcome, let\'s get set up' %></h1>
+    <p class="muted">
+      <% if (status.complete) { %>
+        Everything's set up. Change anything below and save.
+      <% } else { %>
+        Fill in the sections below. The app opens once the first three are done. Match reports are optional.
+      <% } %>
+    </p>
+  </div>
+
+  <% if (status.dataFolder.folder && !status.dataFolder.reachable) { %>
+    <div class="panel warn setup-alert">
+      <strong>Can't reach the data folder <code><%= status.dataFolder.folder %></code>.</strong>
+      If it's on a NAS, check the NAS is switched on and this PC can open the share, then
+      <a href="/setup">try again</a>. Only choose a different folder if the squad has really moved.
+    </div>
+  <% } %>
+
+  <form id="setup-form" class="setup-steps" autocomplete="off" novalidate>
+
+    <section class="panel setup-step" data-step="dataFolder">
+      <h2><span class="dot <%= status.dataFolder.done ? 'on' : 'off' %>"></span> 1. Where to save the squad</h2>
+      <p class="muted small">
+        Players, results, photos and videos are saved in this folder on your computer. To share one squad between
+        several PCs, choose a shared network folder (e.g. on a NAS) on each of them.
+      </p>
+      <div class="setup-row">
+        <label class="grow">Data folder
+          <input name="dataFolder" id="data-folder" value="<%= status.dataFolder.folder || suggestedFolder %>" spellcheck="false">
+        </label>
+        <% if (canBrowse) { %><button type="button" class="btn" id="browse-btn">Browse…</button><% } %>
+      </div>
+      <p class="field-msg" data-for="dataFolder"></p>
+    </section>
+
+    <section class="panel setup-step" data-step="team">
+      <h2><span class="dot <%= status.team.done ? 'on' : 'off' %>"></span> 2. Your team</h2>
+      <p class="muted small">Type them however you like. They appear on the team pages and help Claude pitch match reports.</p>
+      <div class="match-fields">
+        <label>Age group
+          <input name="ageGroup" value="<%= status.team.ageGroup %>" placeholder="e.g. U14, U16 Girls, Seniors" maxlength="40">
+          <span class="field-msg" data-for="ageGroup"></span>
+        </label>
+        <label>Team name
+          <input name="teamName" value="<%= status.team.teamName %>" placeholder="e.g. Ironsides Lions" maxlength="60">
+          <span class="field-msg" data-for="teamName"></span>
+        </label>
+      </div>
+      <p class="field-msg" data-for="team"></p>
+    </section>
+
+    <section class="panel setup-step" data-step="spond">
+      <h2><span class="dot <%= status.spond.done ? 'on' : 'off' %>"></span> 3. Spond login</h2>
+      <p class="muted small">
+        Used to read who's available for each match. It's saved on this PC only, in a settings file outside the
+        shared data folder, and never shown again.
+      </p>
+      <div class="match-fields">
+        <label>Spond email
+          <input name="spondEmail" type="email" value="<%= status.spond.email %>" placeholder="you@example.com" autocomplete="username">
+          <span class="field-msg" data-for="spondEmail"></span>
+        </label>
+        <label>Spond password
+          <input name="spondPassword" type="password" placeholder="<%= status.spond.done ? 'Saved. Leave blank to keep it' : '' %>" autocomplete="current-password">
+          <span class="field-msg" data-for="spondPassword"></span>
+        </label>
+      </div>
+      <p class="field-msg" data-for="spond"></p>
+    </section>
+
+    <section class="panel setup-step" data-step="claude">
+      <h2><span class="dot <%= status.claude.mode !== 'off' ? 'on' : 'off' %>"></span> 4. Match reports with Claude <span class="optional">optional</span></h2>
+      <p class="muted small">Claude can write a match report from a recorded result. Pick how, or skip it. You can change this later.</p>
+      <div class="choice-list">
+        <label class="choice">
+          <input type="radio" name="claudeMode" value="cli" <%= status.claude.mode === 'cli' ? 'checked' : '' %>>
+          <span><strong>Claude Code on this PC</strong>
+            <span class="muted small">Uses your Claude subscription, no key needed.
+              <%= cliFound ? 'Claude Code was found on this PC.' : 'Claude Code isn\'t installed on this PC yet.' %></span></span>
+        </label>
+        <label class="choice">
+          <input type="radio" name="claudeMode" value="api" <%= status.claude.mode === 'api' ? 'checked' : '' %>>
+          <span><strong>Anthropic API key</strong>
+            <span class="muted small">Pay per report through your own key from
+              <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>.</span></span>
+        </label>
+        <div class="api-key-row" <%= status.claude.mode === 'api' ? '' : 'hidden' %>>
+          <div class="match-fields">
+            <label>API key
+              <input name="anthropicApiKey" type="password" spellcheck="false" placeholder="<%= status.claude.hasApiKey ? 'Saved. Leave blank to keep it' : 'sk-ant-…' %>">
+              <span class="field-msg" data-for="anthropicApiKey"></span>
+            </label>
+          </div>
+        </div>
+        <label class="choice">
+          <input type="radio" name="claudeMode" value="off" <%= status.claude.mode === 'off' ? 'checked' : '' %>>
+          <span><strong>Skip</strong> <span class="muted small">No AI match reports.</span></span>
+        </label>
+      </div>
+    </section>
+
+    <div class="actions setup-actions">
+      <button type="submit" class="btn primary" id="save-btn"><%= status.complete ? 'Save' : 'Save and continue' %></button>
+      <span id="save-status" class="muted small" role="status"></span>
+    </div>
+    <p class="muted small">Settings for this PC are saved in <code><%= status.envFile %></code>.</p>
+  </form>
+</main>
+
+<script>
+(() => {
+  const form = document.getElementById('setup-form');
+  const statusEl = document.getElementById('save-status');
+  const saveBtn = document.getElementById('save-btn');
+  const apiRow = form.querySelector('.api-key-row');
+
+  form.querySelectorAll('input[name="claudeMode"]').forEach(r =>
+    r.addEventListener('change', () => { apiRow.hidden = form.claudeMode.value !== 'api'; }));
+
+  const browse = document.getElementById('browse-btn');
+  if (browse) browse.addEventListener('click', async () => {
+    browse.disabled = true;
+    statusEl.textContent = 'A folder picker has opened. It may be behind this window.';
+    try {
+      const r = await fetch('/setup/browse', { method: 'POST' }).then(r => r.json());
+      if (r.folder) form.dataFolder.value = r.folder;
+      statusEl.textContent = r.error || '';
+    } catch { statusEl.textContent = 'The folder picker didn\'t open. Type the path instead.'; }
+    browse.disabled = false;
+  });
+
+  function showMessages(errors, notes) {
+    form.querySelectorAll('.field-msg').forEach(el => { el.textContent = ''; el.className = 'field-msg'; });
+    const put = (key, text, kind) => {
+      const el = form.querySelector(`.field-msg[data-for="${key}"]`);
+      if (el && text) { el.textContent = text; el.classList.add(kind); }
+    };
+    Object.entries(errors || {}).forEach(([k, v]) => put(k, v, 'error'));
+    put('dataFolder', notes?.dataFolder, 'ok');
+    put('spond', notes?.spond, 'ok');
+    put('spond', notes?.spondWarning, 'error');
+  }
+
+  function showDots(s) {
+    const set = (step, on) => {
+      const dot = form.querySelector(`[data-step="${step}"] .dot`);
+      if (dot) { dot.classList.toggle('on', on); dot.classList.toggle('off', !on); }
+    };
+    set('dataFolder', s.dataFolder.done);
+    set('team', s.team.done);
+    set('spond', s.spond.done);
+    set('claude', s.claude.mode !== 'off');
+  }
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    saveBtn.disabled = true;
+    statusEl.textContent = 'Saving and checking…';
+    const body = Object.fromEntries(new FormData(form));
+    try {
+      const r = await fetch('/setup/save', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      }).then(r => r.json());
+      if (r.error && !r.status) throw new Error(r.error);
+      showMessages(r.errors, r.notes);
+      showDots(r.status);
+      form.spondPassword.value = '';
+      if (form.anthropicApiKey) form.anthropicApiKey.value = '';
+      if (r.complete && r.ok && !r.notes?.spondWarning) {
+        statusEl.textContent = 'All set. Opening the app…';
+        setTimeout(() => { location.href = '/squad'; }, 900);
+        return;
+      }
+      if (r.complete) {
+        // Usable, but say what's wrong instead of jumping away from the message.
+        statusEl.innerHTML = 'Saved. Check the note in red above, or <a href="/squad">continue to the app</a>.';
+      } else {
+        statusEl.textContent = 'Saved what was filled in. Finish the sections marked in red.';
+      }
+    } catch (err) {
+      statusEl.textContent = `Couldn't save: ${err.message}`;
+    }
+    saveBtn.disabled = false;
+  });
+})();
+</script>
+<%- include('partials/foot') %>

@@ -3,13 +3,16 @@
 <main class="container">
   <div class="page-head">
     <h1>Match Report</h1>
-    <p class="muted">Generate a Sky Sports–style match report from a recorded result, powered by Claude Code CLI.</p>
+    <p class="muted">Generate a Sky Sports–style match report from a recorded result, written by Claude.</p>
   </div>
 
-  <% if (!cliReady) { %>
+  <% if (!engine.ready) { %>
     <div class="panel warn">
-      <strong>Claude Code CLI not detected.</strong>
-      Report generation requires the <code>claude</code> CLI — install from <a href="https://docs.claude.com/claude-code" target="_blank" rel="noopener">docs.claude.com/claude-code</a> then restart the server.
+      <strong><%= engine.problem %></strong>
+      <% if (engine.mode === 'cli') { %>
+        Install Claude Code from <a href="https://docs.claude.com/claude-code" target="_blank" rel="noopener">docs.claude.com/claude-code</a>, or
+      <% } %>
+      <a href="/setup">open Setup</a> to choose how match reports are written on this PC.
     </div>
   <% } %>
 
@@ -45,7 +48,7 @@
       <a id="edit-match-link" class="btn">Edit match</a>
       <span id="gen-status" class="muted small"></span>
     </div>
-    <p class="muted small">Generation takes 20–60 s — Claude Code CLI uses your Pro subscription, no API key needed. Add key moments in the match's coach notes for a richer report.</p>
+    <p class="muted small">Generation takes 20–60 s<%= engine.mode === 'api' ? ' and is billed to the Anthropic API key saved in Setup' : ' and uses this PC\'s Claude Code subscription' %>. Add key moments in the match's coach notes for a richer report.</p>
   </section>
 
   <!-- Step 3: report output -->

@@ -1,13 +1,13 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { DEFAULT_FORMAT, getFormat, normaliseFormat, seasonForDate } from '../public/js/rugby.js';
-import { projectRoot, dataDir, photosDir, videosDir } from './envPath.js';
+import { paths } from './envPath.js';
 
-export const paths = { projectRoot, dataDir, photosDir, videosDir };
+export { paths };
 
 async function readJson(file, fallback) {
   try {
-    const text = await fs.readFile(path.join(dataDir, file), 'utf8');
+    const text = await fs.readFile(path.join(paths.dataDir, file), 'utf8');
     return JSON.parse(text);
   } catch (e) {
     if (e.code === 'ENOENT') return fallback;
@@ -16,8 +16,8 @@ async function readJson(file, fallback) {
 }
 
 async function writeJson(file, data) {
-  await fs.mkdir(dataDir, { recursive: true });
-  await fs.writeFile(path.join(dataDir, file), JSON.stringify(data, null, 2));
+  await fs.mkdir(paths.dataDir, { recursive: true });
+  await fs.writeFile(path.join(paths.dataDir, file), JSON.stringify(data, null, 2));
 }
 
 // ── Squad ──────────────────────────────────────────────────────────────────
@@ -68,6 +68,7 @@ export async function loadSettings() {
   s.club = {
     name: 'Ironsides Rugby', shortName: 'Ironsides', founded: '1943',
     primaryColor: '#1C7732', primaryDark: '#0E3F1A',
+    ageGroup: '', teamName: '',
     ...(s.club || {}),
   };
   s.teams = s.teams || {};

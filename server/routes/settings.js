@@ -1,6 +1,7 @@
 import express from 'express';
 import { loadSettings, saveSettings } from '../data.js';
-import { detectClaudeCli } from '../claude/reportGenerator.js';
+import { reportEngine } from '../claude/reportGenerator.js';
+import { envFilePath } from '../config.js';
 import { configuredEmail } from '../spond/auth.js';
 import { POSITION_TAGS } from '../../public/js/rugby.js';
 
@@ -8,9 +9,10 @@ const router = express.Router();
 
 router.get('/', async (req, res, next) => {
   try {
-    const [settings, claudeCli] = await Promise.all([loadSettings(), detectClaudeCli()]);
+    const [settings, engine] = await Promise.all([loadSettings(), reportEngine()]);
     const env = {
-      claudeCli,
+      engine,
+      envFile: envFilePath(),
       spond: !!(process.env.SPOND_EMAIL && process.env.SPOND_PASSWORD),
       spondEmail: configuredEmail(),
     };
@@ -33,6 +35,8 @@ router.post('/save', async (req, res, next) => {
         name: s(b.clubName, cur.club.name, 100),
         shortName: s(b.clubShortName, cur.club.shortName, 40),
         founded: s(b.clubFounded, cur.club.founded, 10),
+        ageGroup: s(b.ageGroup, '', 40) || cur.club.ageGroup,   // blank would send everyone back to setup
+        teamName: s(b.teamName, '', 60) || cur.club.teamName,
         primaryColor: HEX.test(b.primaryColor) ? b.primaryColor : cur.club.primaryColor,
         primaryDark: HEX.test(b.primaryDark) ? b.primaryDark : cur.club.primaryDark,
       },

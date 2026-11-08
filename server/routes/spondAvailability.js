@@ -4,9 +4,9 @@ import path from 'path';
 import { loadSquad, saveSquad, loadSelection, saveSelection, loadSettings, newId, paths } from '../data.js';
 import { listEvents, getEvent, extractAvailability, autoMatch, groupPlayerNames } from '../spond/api.js';
 import { loginInfo, reloginWith, configuredEmail } from '../spond/auth.js';
-import { secretsEnvPath } from '../envPath.js';
+import { saveEnv, envFilePath, invalidateSetupStatus } from '../config.js';
 
-const DEBUG_DIR = path.join(paths.dataDir, 'cache');
+const debugDir = () => path.join(paths.dataDir, 'cache');
 
 const router = express.Router();
 
@@ -20,38 +20,22 @@ router.post('/test', async (req, res) => {
 });
 
 // Re-login with new credentials. Body: { email, password }. Both required.
-// On success the new creds are also persisted to the secrets env file
-// (preserving any other lines in that file) so they survive a server restart.
+// On success the new creds are also saved to this PC's env file (the same one
+// setup writes, keeping its other lines) so they survive a server restart.
 router.post('/relogin', async (req, res) => {
   const { email, password } = req.body || {};
   if (!email || !password) return res.status(400).json({ ok: false, error: 'Both email and password are required.' });
   try {
     await reloginWith({ email, password });
-    // Persist to the secrets file (best-effort — auth still works for this session even if writing fails)
-    try {
-      let text = '';
-      try { text = await fs.readFile(secretsEnvPath, 'utf8'); } catch {}
-      text = upsertEnvLine(text, 'SPOND_EMAIL', email);
-      text = upsertEnvLine(text, 'SPOND_PASSWORD', password);
-      await fs.writeFile(secretsEnvPath, text, 'utf8');
-    } catch (e) { console.error(`Could not persist ${secretsEnvPath}:`, e.message); }
+    // Best-effort: auth still works for this session even if writing fails.
+    try { await saveEnv({ SPOND_EMAIL: String(email).trim(), SPOND_PASSWORD: String(password) }); }
+    catch (e) { console.error(`Could not save the Spond login to ${envFilePath()}:`, e.message); }
+    invalidateSetupStatus();
     res.json({ ok: true, email: configuredEmail() });
   } catch (e) {
     res.status(401).json({ ok: false, error: e.message });
   }
 });
-
-// Add or update a `KEY=VALUE` line in a .env-style text blob. Preserves the
-// rest of the file. Values containing spaces or # get double-quoted.
-function upsertEnvLine(text, key, value) {
-  const needsQuote = /\s|#/.test(value);
-  const escaped = needsQuote ? `"${String(value).replace(/"/g, '\\"')}"` : String(value);
-  const newLine = `${key}=${escaped}`;
-  const re = new RegExp(`^\\s*${key}\\s*=.*$`, 'm');
-  if (re.test(text)) return text.replace(re, newLine);
-  const sep = text.length === 0 || text.endsWith('\n') ? '' : '\n';
-  return text + sep + newLine + '\n';
-}
 
 router.post('/events', async (req, res) => {
   try {
@@ -106,9 +90,9 @@ router.post('/import', async (req, res) => {
     // Stash a copy of the raw event for diagnostics — the user can share this
     // file when names aren't matching so we can see what Spond actually sent.
     try {
-      await fs.mkdir(DEBUG_DIR, { recursive: true });
+      await fs.mkdir(debugDir(), { recursive: true });
       await fs.writeFile(
-        path.join(DEBUG_DIR, `spond-event-${String(eventId).replace(/[^A-Z0-9]/gi, '').slice(0, 32)}.json`),
+        path.join(debugDir(), `spond-event-${String(eventId).replace(/[^A-Z0-9]/gi, '').slice(0, 32)}.json`),
         JSON.stringify(event, null, 2)
       );
     } catch (e) { /* non-fatal */ }

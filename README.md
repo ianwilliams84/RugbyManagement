@@ -13,24 +13,32 @@ A rugby sibling of the BICC Team Management site.
 npm install
 ```
 
-Credentials live outside the repo in `..\secrets\ironsides.env` (the shared
-`dev\secrets` folder; set `IRONSIDES_ENV` to use a different path). Copy
-`BLANK pw.env` there and fill in:
-
-```
-SPOND_EMAIL=you@example.com
-SPOND_PASSWORD=your-password
-PORT=3001
-```
-
-Run the site with `runme.bat` (installs dependencies on the first run and opens
-the browser), or:
+Run the site with `runme.exe` / `runme.bat` (installs dependencies on the
+first run and opens the browser), or:
 
 ```
 npm run dev
 ```
 
-Open http://localhost:3001.
+Open http://localhost:3001. **On first run every page opens the Setup screen**
+(`/setup`) until these are filled in:
+
+1. **Data folder**: where the squad, results, photos and videos are saved. Use a
+   shared folder (e.g. a NAS share) on each PC to share one squad.
+2. **Your team**: age group and team name, free text.
+3. **Spond login**: used to read match availability.
+4. **Match reports** (optional, off by default): Claude Code on this PC, an
+   Anthropic API key, or off.
+
+Setup saves the per-PC answers (Spond login, data folder, Claude choice, API
+key) to `..\secrets\ironsides.env` when that file exists (or wherever
+`IRONSIDES_ENV` points), otherwise to the gitignored `pw.env` in this folder.
+The age group and team name go in `settings.json` in the data folder, so every
+PC sharing it sees the same team. Settings ▸ **Run setup again** changes any
+of it later. `PORT` (default 3001) can be set in the same env file.
+
+If the data folder is set but can't be reached (NAS off), the app shows the
+Setup screen with a warning rather than starting an empty squad somewhere else.
 
 ## Sections
 
@@ -55,12 +63,13 @@ Open http://localhost:3001.
 
 ## Data
 
-Player names and photos never go in the repo. By default everything is stored
-in the gitignored `data/`, `photos/` and `videos/` folders. To share one squad
-between PCs, set `IRONSIDES_DATA_DIR` in the secrets file to a shared folder
-(e.g. `\\IanNAS\home\IronsidesRugbyData`). The JSON files, `photos/` and
-`videos/` then live there. The server won't start if that folder can't be
-reached, so it can't quietly create an empty local squad instead.
+Player names and photos never go in the repo. Everything is stored in the data
+folder chosen during Setup (saved as `IRONSIDES_DATA_DIR`), e.g.
+`\\IanNAS\home\IronsidesRugbyData` to share one squad between PCs. The JSON
+files, `photos/` and `videos/` live there. If that folder can't be reached, the
+app holds on the Setup screen, so it can't quietly create an empty squad
+somewhere else. The old in-project `data/`, `photos/` and `videos/` folders are
+gitignored and no longer used.
 
 The JSON files:
 
@@ -78,5 +87,6 @@ Player photos go in `photos/<player id>.jpg` (ids are shown in Settings → Play
 - `public/js/rugby.js`: shared formats, positions, points values and season
   helpers, used by both the server and the browser
 - `html2canvas` (CDN) for PNG export
-- Match reports use your local Claude Code CLI (`claude -p`); no API key is needed
+- Match reports are off until chosen in Setup: the local Claude Code CLI
+  (`claude -p`, no key needed) or an Anthropic API key
 - Driving distances: postcodes.io + the OSRM public router

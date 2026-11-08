@@ -8,7 +8,7 @@ async function login() {
   const email = process.env.SPOND_EMAIL;
   const password = process.env.SPOND_PASSWORD;
   if (!email || !password) {
-    throw new Error('SPOND_EMAIL / SPOND_PASSWORD not set in dev\\secrets\\ironsides.env.');
+    throw new Error('No Spond login is saved on this PC. Add it in Setup.');
   }
   // Spond moved /core/v1/login → /core/v1/auth2/login (the old path now
    //  returns 404). Matches the upstream `Olen/Spond` python lib.
