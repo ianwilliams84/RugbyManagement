@@ -235,12 +235,14 @@ export function createSubPlan({ state, fmt, squadById, onChange, escapeHtml }) {
           <tbody>${body.join('')}</tbody>
         </table>
       </div>
-      <h3 class="sp-subtitle">Playing time</h3>
-      <div class="sp-scroll">
-        <table class="sp-summary">
-          <thead><tr><th>Player</th><th>F/B</th>${cols.map((_, c) => `<th>${periodLabel(c).at}</th>`).join('')}<th>Minutes</th><th>Share</th><th>On / off</th></tr></thead>
-          <tbody>${summary || `<tr><td colspan="${cols.length + 5}" class="muted">Pick a team above first.</td></tr>`}</tbody>
-        </table>
+      <div class="sp-time">
+        <h3 class="sp-subtitle">Playing time</h3>
+        <div class="sp-scroll">
+          <table class="sp-summary">
+            <thead><tr><th>Player</th><th>F/B</th>${cols.map((_, c) => `<th>${periodLabel(c).at}</th>`).join('')}<th>Minutes</th><th>Share</th><th>On / off</th></tr></thead>
+            <tbody>${summary || `<tr><td colspan="${cols.length + 5}" class="muted">Pick a team above first.</td></tr>`}</tbody>
+          </table>
+        </div>
       </div>
     `;
     wire();
